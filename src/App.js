@@ -1,15 +1,31 @@
-import React from 'react';
+import React, {Component, Fragment} from 'react';
 import './App.css';
 import Product from './components/Product';
+
+import { Col, Row } from 'react-bootstrap';
+import ProductSingle from './components/ProductSingle';
+import CategoryPage from './components/CategoryPage';
+import {BrowserRouter as Router, Route, Link} from 'react-router-dom';
 
 
 function App() {
   return (
-
-    <div className="App">
+    <Router>
+    <Fragment>
+      <div className="App">
+      <h3 className="store_head">WooCommerce Store</h3>
       
-        < Product />
+          
+          <Route exact path="/" component={Product}/>
+          <Route exact path="/product/:id" component={ProductSingle}/>
+          <Route exact path="/category/:id" component={CategoryPage}/>
+          
+      
+        
+      
     </div>
+    </Fragment>
+    </Router>
   );
 }
 

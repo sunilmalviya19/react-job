@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 //import WooCommerceAPI from 'woocommerce-api';
 import { Col, Row, Container, Button, Spinner } from 'react-bootstrap';
 import WooCommerce from '../Api';
+import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
+import SideMenu from './SideMenu';
 
 
  class Product extends Component {
@@ -34,25 +36,23 @@ import WooCommerce from '../Api';
   }
 
   productlist(){
-    return Object.entries(this.state.items).map(([key, value], i) => {
-
-      return (
-        
-        
-              <Col key={key} xs={3} className="product_item"> <div key={key}>
-                <img width="100%" alt="product" src={value.images[0].src} />
-                <h4>{value.name}</h4>
-                <h6> ${value.price}</h6>
+    return (
+        this.state.items.map((item) => {
+          return (
+              <Col key={item.id} xs={3} className="product_item"> <div key={item.id}>
+               
+                <img width="100%" alt="product" src={item.images[0].src} />
+                <Link to={`/product/${item.id}`}><h4>{item.name}</h4></Link>
+                <h6> ${item.price}</h6>
+               
                  <Button variant="outline-primary" className="add_to_cart_btn">Add to cart</Button>
               
                   </div>
               </Col>
              
-          
-                 
-           
-      )
-    })
+             );
+            })    
+    );
   }
   
 //render  list
@@ -66,10 +66,20 @@ import WooCommerce from '../Api';
          }
                   return(
         <Container>
-        <h3 className="store_head">WooCommerce Store</h3>
-             <Row>
+          <Row>
+
+<Col xs={3}>
+   < SideMenu />
+</Col>
+<Col xs={9}>
+   
+         <Row>
         {this.productlist()}
         </Row>
+</Col>
+</Row>        
+        
+             
             
           </Container>
     )
