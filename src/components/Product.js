@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 //import WooCommerceAPI from 'woocommerce-api';
-import { Col, Row, Container, Button, Spinner } from 'react-bootstrap';
+import { Col, Row, Container, Button, Spinner, Pagination } from 'react-bootstrap';
 import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import SideMenu from './SideMenu';
@@ -9,32 +9,57 @@ import SideMenu from './SideMenu';
  class Product extends Component {
        constructor(props) {
           super(props);
+           this.pageChanged = this.pageChanged.bind(this);
           this.state = {
              error: null,
              isLoaded: false,
              currentPage: 1,
+             per_page_product: 20,
+             total_items:null,
              category: [],
-             items: {}
+             items: []
             
           }
+            
+          
         }
 
-  getData(){
+     
+
+     getData(page){
      const that = this;
-    WooCommerce.getAsync('products?per_page=36')
+      if (page) {
+        var page = page;
+       
+     }else{
+      var page = 1;
+     }
+    WooCommerce.getAsync('products?per_page='+that.state.per_page_product+'&page='+page)
      .then(function(result) {
+      console.log(JSON.parse(result.toJSON().body));
       that.setState({
           isLoaded: true,
+          total_items: result.headers['x-wp-total'],
           items: JSON.parse(result.toJSON().body),
         })
             
       })
-  }
 
+
+     
+  }
+  
+  
   componentDidMount(){
     this.getData();
-  }
 
+  }
+   pageChanged(e) {
+
+    this.setState({ currentPage: e.target.text });
+    this.getData(e.target.text);
+
+  }
   productlist(){
     return (
         this.state.items.map((item) => {
@@ -57,8 +82,31 @@ import SideMenu from './SideMenu';
   
 //render  list
   render () {
-         
-        // console.log(this.state);
+      console.log(this.state.currentPage);
+      
+      const all_page = this.state.total_items / this.state.per_page_product;
+      let active = this.state.currentPage;
+      let Pitems = [];   
+      //const indexOfLastTodo = this.state.currentPage * this.state.per_page_product;
+     // const indexOfFirstTodo = indexOfLastTodo - this.state.per_page_product;
+    //  const renderedProduct = this.state.items.slice(indexOfFirstTodo, indexOfLastTodo);
+     
+      for (let number = 1; number <= all_page; number++) {
+        Pitems.push(
+          <Pagination.Item key={number} active={number === active}>
+            {number}
+          </Pagination.Item>
+          
+          ,
+        );
+      }
+
+const paginationBasic = (
+  <div>
+    <Pagination onClick={this.pageChanged}>{Pitems}</Pagination>
+   
+  </div>
+);
          if (!this.state.isLoaded) {
             return (
                <Spinner animation="border" variant="primary" />
@@ -79,7 +127,9 @@ import SideMenu from './SideMenu';
 </Col>
 </Row>        
         
-             
+           <div className="page_cont">
+           {paginationBasic}
+          </div>  
             
           </Container>
     )

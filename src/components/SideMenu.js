@@ -8,10 +8,10 @@ class SideMenu extends Component {
 
     constructor(props, state) {
         super(props, state);
-
+       
         this.state = {
 
-            loading: true,
+            loading: false,
             categories: []
 
         };
@@ -22,7 +22,7 @@ class SideMenu extends Component {
         const that = this;
        WooCommerce.getAsync('products/categories')
         .then(function(result) {
-          console.log(JSON.parse(result.toJSON().body));
+         // console.log(JSON.parse(result.toJSON().body));
        
         that.setState({
              loading: true,
@@ -40,15 +40,14 @@ class SideMenu extends Component {
 
      renderCategories = () => {
           return (
-            <Router>
-            <Fragment>
+           
             <div className="sied_menu_link">
-            
+           
             {
               this.state.categories.map((category) => {
                   return ( 
                     
-                         <Link to={`/category/${category.id}`}>
+                         <Link to={`/category/${category.id}`} key={category.id}>
                           {category.name}
                          </Link>
                     
@@ -56,10 +55,7 @@ class SideMenu extends Component {
                   );
               })
            }
-           </div> 
-         
-    </Fragment>
-    </Router>         
+           </div>      
                
           );
       }

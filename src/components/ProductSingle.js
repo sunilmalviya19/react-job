@@ -4,13 +4,13 @@ import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 
  class ProductSingle extends Component {
-       constructor({ match :{ params :{id} } }) {
-          super();
+       constructor(props, state) {
+          super(props, state);
           this.state = {
              error: null,
              isLoaded: false,
              product_data: {},
-             product_id: id
+             product_id: props.match.params.id
             
           }
         }
