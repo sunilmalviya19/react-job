@@ -15,7 +15,8 @@ import { addToCart } from "../actions";
              product_id: props.match.params.id
             
           }
-          
+        
+         
         }
 
   getData(){
@@ -38,12 +39,25 @@ import { addToCart } from "../actions";
 
   
   render () {
-    
+      console.log(this.state.product_data.variations);
+   
+      
     if (!this.state.isLoaded) {
         return (
            <Spinner animation="border" variant="primary" />
         );
      }
+    
+            
+        var attributeshtml  = '';
+    this.state.product_data.attributes.map((val,index) => {
+      attributeshtml += '<div className="var_item"><label>'+val.name+'</label><select><option value="">Choose an option</option>'
+        val.options.map((val1,index1) => {
+          attributeshtml += '<option value='+val1.toLowerCase()+'>'+val1+'</option>'
+        })
+        attributeshtml += '</select></div>'
+        
+    })
          return(
         <Container>
           <Row>
@@ -58,8 +72,8 @@ import { addToCart } from "../actions";
 								<h2 className="single_title">{this.state.product_data.name}</h2>
 								
 									<div className="s_price">${this.state.product_data.price}</div>
-									
-								
+                  <div dangerouslySetInnerHTML={{ __html: attributeshtml}} />
+        
     <Button variant="outline-primary" className="add_to_cart_btn" onClick={() => {
          addToCart({
             product_id: this.state.product_data.id,

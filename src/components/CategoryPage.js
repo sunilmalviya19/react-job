@@ -72,8 +72,8 @@ class CategoryPage extends Component
                     <Link to={`/product/${item.id}`}><h4>{item.name}</h4></Link>
                     <h6> ${item.price}</h6>
                    
-                     <Button variant="outline-primary" className="add_to_cart_btn">Add to cart</Button>
-                  
+                     
+                     <Button variant="outline-primary" className="add_to_cart_btn" href={`/product/${item.id}`}>Buy Now</Button>
                       </div>
                   </Col>
                  

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import axios from 'axios';
 import { Col, Row, Container, Button, Spinner, Table} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
-import { cartRoot, removeFromCart, getCartTotals, qtychangeCart } from "../actions";
+import { cartRoot, removeFromCart, getCartTotals, qtychangeCart, getProductimage } from "../actions";
 class Cart extends Component {
   constructor(props) {
     super(props);
@@ -22,8 +22,8 @@ class Cart extends Component {
      var token = localStorage.getItem('token');
 
      var config = {
-        data: {
-          'thumb' : true
+       data: {
+        'thumb' : true,
         },
          headers: {
                  'Content-Type':'application/json',
@@ -31,9 +31,9 @@ class Cart extends Component {
                 },
                 };
 
- return axios.get(cartRoot+'get-cart',config)
+ return axios.get(cartRoot+'get-cart', config)
             .then(res => {
-              //console.log(res);
+              console.log(res);
 		       that.setState({
 		          isLoaded: true,
               cart: res.data,
@@ -87,7 +87,6 @@ cartList(){
           return (
         <tr key={item.key} id="{item.product_id}">
           <td className="cart_product">
-				
 			</td>
       <td className="cart_product">
       {item.product_name}
@@ -124,7 +123,7 @@ cartList(){
 
 
   cartTotals(){
-  
+   
       return (
         <div className="total_box"> 
         <Row>
@@ -146,6 +145,9 @@ cartList(){
        
   }
   
+
+
+
   render() {
 	  if (!this.state.isLoaded) {
             return (

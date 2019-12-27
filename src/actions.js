@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import WooCommerce from './Api';
 import axios from 'axios';
+import Notifications, {notify} from 'react-notify-toast';
 const cartRoot = WooCommerce.url+'/wp-json/cocart/v1/';
 export function postData(endpoint, request_data){
     var token = localStorage.getItem('token');
@@ -22,21 +23,12 @@ export function postData(endpoint, request_data){
 const addToCart = ({ product_id, quantity }) => {
     var req = {product_id:product_id,quantity:quantity}
   // postData('add-item', req);
-  //  let cart_products = [];
-  //  if(localStorage.getItem('cart_products')){
-  //   cart_products = JSON.parse(localStorage.getItem('cart_products'));
-  //  }
-  //  cart_products.push({'productId' : product_id + 1, quantity : quantity});
-  //  localStorage.setItem('cart_products', JSON.stringify(cart_products));
-  //  var carti = localStorage.getItem('cart_products');
-  let productsString = localStorage.getItem('products')
-  let products = []
-  if(productsString){
-      products = JSON.parse(productsString)
-  } 
-  products.concat([req])
-  localStorage.setItem('products', JSON.stringify(products)) // set products as an array
-      console.log(products);
+   postData('add-item', req).then(result => {
+    let myColor = { background: 'green', text: "#FFFFFF", top: "20px" };
+     notify.show("Added to cart", "custom", 5000, myColor);
+   
+  });
+   
   }
 
 
@@ -57,6 +49,15 @@ const addToCart = ({ product_id, quantity }) => {
      console.log(err);
         return err;
     })  
+}
+
+const getProductimage = (product_id) => {
+  WooCommerce.getAsync('products/'+product_id)
+    .then(function(result) {
+      var product_data = JSON.parse(result.toJSON().body);
+      console.log(product_data.images[0].src);
+        return product_data.images[0].src;
+      })
 }
 
 const getCartTotals = () => {
@@ -99,4 +100,4 @@ const qtychangeCart = (qty, cart_item_key) => {
 }
 
 
-  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart };
+  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage };
