@@ -1,7 +1,9 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { Col, Row, Container, Button, Spinner } from 'react-bootstrap';
 import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
+import { addToCart } from "../actions";
+
 
  class ProductSingle extends Component {
        constructor(props, state) {
@@ -13,6 +15,7 @@ import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
              product_id: props.match.params.id
             
           }
+          
         }
 
   getData(){
@@ -35,7 +38,7 @@ import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 
   
   render () {
-   
+    
     if (!this.state.isLoaded) {
         return (
            <Spinner animation="border" variant="primary" />
@@ -56,8 +59,14 @@ import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 								
 									<div className="s_price">${this.state.product_data.price}</div>
 									
-									
-                                    <Button variant="outline-primary" className="add_to_cart_btn">Add to cart</Button>
+								
+    <Button variant="outline-primary" className="add_to_cart_btn" onClick={() => {
+         addToCart({
+            product_id: this.state.product_data.id,
+            quantity: 1
+        })
+    }}
+    >Add to cart</Button>
                                 <div dangerouslySetInnerHTML={{ __html: this.state.product_data.description}} />
                                     <div className="pro_description"> </div>
 								

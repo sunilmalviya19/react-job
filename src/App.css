@@ -89,3 +89,8 @@ button.add_to_cart_btn {
   width: 50%;
   margin-top: 20px;
 }
+
+.total_box {
+  border: 1px solid #ccc;
+  padding: 10px;
+}

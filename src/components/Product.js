@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-//import WooCommerceAPI from 'woocommerce-api';
 import { Col, Row, Container, Button, Spinner, Pagination } from 'react-bootstrap';
 import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import SideMenu from './SideMenu';
+import axios from 'axios';
 
 
  class Product extends Component {
@@ -21,13 +21,14 @@ import SideMenu from './SideMenu';
             
           }
             
-          
         }
 
      
 
      getData(page){
      const that = this;
+    
+
       if (page) {
         var page = page;
        
@@ -45,13 +46,14 @@ import SideMenu from './SideMenu';
             
       })
 
-
+      
      
   }
-  
+ 
   
   componentDidMount(){
     this.getData();
+   
 
   }
    pageChanged(e) {
@@ -70,8 +72,8 @@ import SideMenu from './SideMenu';
                 <Link to={`/product/${item.id}`}><h4>{item.name}</h4></Link>
                 <h6> ${item.price}</h6>
                
-                 <Button variant="outline-primary" className="add_to_cart_btn">Add to cart</Button>
-              
+                 <Button variant="outline-primary" className="add_to_cart_btn" href={`/product/${item.id}`}>Buy Now</Button>
+                 {/* <Link to={`/product/${item.id}`}  className="add_to_cart_btn">Buy Now</Link> */}
                   </div>
               </Col>
              
@@ -114,9 +116,11 @@ const paginationBasic = (
          }
                   return(
         <Container>
+       
           <Row>
 
 <Col xs={3}>
+
    < SideMenu />
 </Col>
 <Col xs={9}>
