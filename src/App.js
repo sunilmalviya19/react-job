@@ -8,6 +8,7 @@ import CategoryPage from './components/CategoryPage';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import Login from './components/Login';
 import Cart from './components/Cart';
+import Checkout from './components/Checkout';
 import Notifications, {notify} from 'react-notify-toast';
 
 
@@ -23,7 +24,8 @@ function App() {
           <Switch>
           <Route exact path="/" component={Product}/>
           <Route exact path="/login" component={Login}/>
-           <Route exact path="/cart" component={Cart}/>
+          <Route exact path="/cart" component={Cart}/>
+           <Route exact path="/checkout" component={Checkout}/>
           <Route exact path="/product/:id" component={ProductSingle}/>
           <Route exact path="/category/:id" component={CategoryPage}/>
           </Switch>

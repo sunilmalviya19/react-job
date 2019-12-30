@@ -20,15 +20,18 @@ export function postData(endpoint, request_data){
     })  
    
 }
-const addToCart = ({ product_id, quantity }) => {
-    var req = {product_id:product_id,quantity:quantity}
-  // postData('add-item', req);
+const addToCart = ({ product_id, quantity, variation_id }) => {
+    var req = {product_id:product_id,quantity:quantity,variation_id:variation_id}
+    console.log(variation_id);
+  postData('add-item', req);
    postData('add-item', req).then(result => {
     let myColor = { background: 'green', text: "#FFFFFF", top: "20px" };
      notify.show("Added to cart", "custom", 5000, myColor);
    
   });
-   
+  
+        
+       
   }
 
 
@@ -99,5 +102,24 @@ const qtychangeCart = (qty, cart_item_key) => {
   })  
 }
 
+const processOrder = (formdta) => {
+  console.log(formdta);
+ var line_items = {product_id:10445, quantity:1}
+    let orderData = JSON.stringify({
+        // we'll process payment in the next step so set to false
+        set_paid: false,
+        billing: formdta,
+        line_items
+    })
+    //  WooCommerce.post('orders', orderData)
+    // .then(function(result) {
+    //  console.log(result);
+     
+    //   })
+   
+}
 
-  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage };
+
+  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder };
+
+

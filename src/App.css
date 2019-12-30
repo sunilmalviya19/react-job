@@ -57,6 +57,7 @@ h3.store_head {
   margin-bottom: 0;
   padding: 20px;
   background-color: aqua;
+   text-align: center;
 }
 
 button.add_to_cart_btn {

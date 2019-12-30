@@ -5,7 +5,6 @@ import WooCommerce from '../Api';
 class Login extends Component {
   constructor(props) {
     super(props);
-       //this.shandleChange = this.shandleChange.bind(this);
     this.state = {
       error: null,
 	  email: '',
@@ -27,9 +26,10 @@ class Login extends Component {
         }).then((response) => response.json())
                 .then((result) => {
 			        if(result.token){
-			        	console.log(result.token);
+			        	console.log(result);
 						localStorage.setItem("token", result.token);
-						localStorage.setItem("display_name", result.user_display_name);
+						localStorage.setItem("user_email", result.user_email);
+              localStorage.setItem("display_name", result.user_display_name);
 						this.setState({message: "User login successfully", redirectLogin: true});
 
 					}
