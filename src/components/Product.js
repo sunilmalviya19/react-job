@@ -56,10 +56,14 @@ import axios from 'axios';
    
 
   }
-   pageChanged(e) {
 
-    this.setState({ currentPage: e.target.text });
-    this.getData(e.target.text);
+  
+
+   pageChanged(e) {
+    
+    var pageno = e.target.text
+    this.setState({ currentPage: pageno });
+    this.getData(pageno);
 
   }
   productlist(){
@@ -73,7 +77,7 @@ import axios from 'axios';
                 <h6> ${item.price}</h6>
                
                  <Button variant="outline-primary" className="add_to_cart_btn" href={`/product/${item.id}`}>Buy Now</Button>
-                 {/* <Link to={`/product/${item.id}`}  className="add_to_cart_btn">Buy Now</Link> */}
+                
                   </div>
               </Col>
              
@@ -95,17 +99,21 @@ import axios from 'axios';
      
       for (let number = 1; number <= all_page; number++) {
         Pitems.push(
-          <Pagination.Item key={number} active={number === active}>
+          
+          <Pagination.Item key={number} active={number === active} onClick={this.pageChanged}>
             {number}
           </Pagination.Item>
-          
           ,
+         
         );
+        
       }
 
 const paginationBasic = (
   <div>
-    <Pagination onClick={this.pageChanged}>{Pitems}</Pagination>
+   
+      <Pagination >{Pitems}</Pagination>
+      
    
   </div>
 );
@@ -130,7 +138,7 @@ const paginationBasic = (
         </Row>
 </Col>
 </Row>        
-        
+
            <div className="page_cont">
            {paginationBasic}
           </div>  

@@ -61,7 +61,7 @@ handleChange(e){
     return (
       <div>
        <Container>
-       <Form onSubmit={this.shandleChange}>
+       <Form onSubmit={this.shandleChange} className="login_box">
   <Form.Group controlId="formBasicEmail">
     <Form.Label>Email address</Form.Label>
     <Form.Control type="email" placeholder="Enter email" name="email" onChange={(e) => this.handleChange(e)}/>

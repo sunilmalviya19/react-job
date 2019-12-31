@@ -95,3 +95,49 @@ button.add_to_cart_btn {
   border: 1px solid #ccc;
   padding: 10px;
 }
+
+.header_top {
+  background-color: cyan;
+}
+
+.header_top li {
+  list-style: none;
+  display: inline-block;
+  /* margin-right: 20px; */
+  padding: 20px;
+}
+
+.header_top li a {
+  font-weight: 600;
+  color: #333;
+}
+
+form.login_box {
+  margin: auto;
+  text-align: left;
+  width: 50%;
+  background-color: #f2f2f2;
+  padding: 30px;
+  margin-top: 50px;
+}
+
+a.checkout_btn {
+  float: right;
+  width: 25%;
+  margin-top: 20px;
+}
+
+.checkout_wrap form {
+  margin: auto;
+  text-align: left;
+  width: 80%;
+  background-color: #f2f2f2;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 0 10px #cccccc9e;
+}
+
+button.place_ordr_btn {
+  width: 30%;
+  padding: 10px;
+}

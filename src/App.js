@@ -8,6 +8,7 @@ import CategoryPage from './components/CategoryPage';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import Login from './components/Login';
 import Cart from './components/Cart';
+import Header from './components/Header';
 import Checkout from './components/Checkout';
 import Notifications, {notify} from 'react-notify-toast';
 
@@ -19,7 +20,8 @@ function App() {
     <Router>
     <Fragment>
       <div className="App">
-      <h3 className="store_head">WooCommerce Store</h3>
+      <Header />
+      {/* <h3 className="store_head">WooCommerce Store</h3> */}
       <Notifications />
           <Switch>
           <Route exact path="/" component={Product}/>
