@@ -89,6 +89,7 @@ button.add_to_cart_btn {
 .product-wrap .add_to_cart_btn {
   width: 50%;
   margin-top: 20px;
+  display: block;
 }
 
 .total_box {

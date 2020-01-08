@@ -1,24 +1,24 @@
 import React, { Component } from "react";
 import { Col, Row, Container, Button, Form } from 'react-bootstrap';
+import {BrowserRouter as Router, Route, Link, Redirect} from 'react-router-dom';
 import axios from 'axios';
 import WooCommerce from '../Api';
 class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: null,
+    error: null,
 	  email: '',
 	  password: '',
     };
   }
 
-
   loginUser = () => {
  	
-	console.log(this.state.email);
+	//console.log(this.state.email);
 	if (this.state.email) {
 	var req = { username: this.state.email, password: this.state.password };
-	var apiHost = 'http://veronica.codingkloud.com/wp-json';
+	var apiHost = WooCommerce.url+'/wp-json';
     fetch(apiHost + '/jwt-auth/v1/token', {
             method: "POST",
             body: JSON.stringify(req),
@@ -31,7 +31,7 @@ class Login extends Component {
 						localStorage.setItem("user_email", result.user_email);
               localStorage.setItem("display_name", result.user_display_name);
 						this.setState({message: "User login successfully", redirectLogin: true});
-
+           this.props.history.push("/");
 					}
                    
                 })
@@ -53,6 +53,7 @@ handleChange(e){
     
   componentDidMount(){
     this.loginUser();
+   
   }
 
   

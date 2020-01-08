@@ -1,17 +1,20 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { Logout } from "../actions";
 
 class Header extends Component {
   constructor(props) {
     super(props);
     this.state = {
       error: null,
-      isLoaded: false,
-      items: [],
+      isLoaded: false
+      
     };
   }
  
   render() {
+    var token = localStorage.getItem('token');
+    console.log(token);
     return (<header id="header">
     <div className="header_top">
     <ul className="menu">
@@ -26,10 +29,13 @@ class Header extends Component {
                     </Link>
                 </li>
                
-                <li>
+                
+                 <li>
+                  { ( !token ) ?
                   <Link to="/login">
                     Login
-                  </Link>
+                  </Link> : <Link onClick={ () => Logout() } to="/login">Logout</Link>
+                  }
                 </li>
               </ul>
     </div>

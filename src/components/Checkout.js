@@ -1,6 +1,6 @@
   import React, {Component, useState} from 'react';
   import { Col, Row, Container, Button, Form, Spinner } from 'react-bootstrap';
-  import { getCountry, processOrder } from "../actions";
+  import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart } from "../actions";
 class Checkout extends Component {
      
  constructor(props, state) {
@@ -10,38 +10,108 @@ class Checkout extends Component {
           var user_email = localStorage.getItem('user_email');
             this.state = {
               isLoaded:false,
-            email: user_email,
-            countries: []
+              cart: [],
+              totals: [],
+              countries: [],
+              billing_states: [],
+              billing_first_name: '',
+              billing_last_name: '',
+              billing_country: '',
+              billing_address_1: '',
+              billing_address_2: '',
+              billing_city: '',
+              billing_state: '',
+              billing_postcode: '',
+              billing_phone: '',
+              billing_email: user_email
              }
           
         }
 
-chekoutSunmit = (event) => {
+
+  handleChange = e => {
+    if( ('billing_country' == e.target.name ) && ( 'select' != e.target.value ) )
+    {
+      getAllStates(e.target.value).then(result => {
+        this.setState({ billing_states: result.states });
+      });
+    }
+
+    var state = {};
+    state[e.target.name] =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    this.setState(state);
+    }
+
+
+chekoutSubmit = (event) => {
 event.preventDefault();
- var chekdata = {
-    first_name:event.target.elements.fname.value,
-    last_name:event.target.elements.lname.value,
-    email:event.target.elements.email.value
-}
+var chekdata =  { 'billing' : {
+    first_name : event.target.elements.billing_first_name.value,
+    last_name : event.target.elements.billing_last_name.value,
+    country : event.target.elements.billing_country.value,
+    address_1 : event.target.elements.billing_address_1.value,
+    address_2 : event.target.elements.billing_address_2.value,
+    city : event.target.elements.billing_city.value,
+    state : event.target.elements.billing_state.value,
+    postcode : event.target.elements.billing_postcode.value,
+    phone : event.target.elements.billing_phone.value,
+    email : event.target.elements.billing_email.value
+    }
+  }
+
+  chekdata['shipping'] = {
+    first_name : event.target.elements.billing_first_name.value,
+    last_name : event.target.elements.billing_last_name.value,
+    country : event.target.elements.billing_country.value,
+    address_1 : event.target.elements.billing_address_1.value,
+    address_2 : event.target.elements.billing_address_2.value,
+    city : event.target.elements.billing_city.value,
+    state : event.target.elements.billing_state.value,
+    postcode : event.target.elements.billing_postcode.value,
+    email : event.target.elements.billing_email.value
+    }
+  var temp_items = [];
+  Object.values(this.state.cart).map((item, i) => {
+    var line_items = {};
+    line_items['product_id'] = item.product_id
+    line_items['quantity'] = item.quantity
+    temp_items.push(line_items)
+  })
+  
+  chekdata['line_items'] = temp_items
+  chekdata['payment_method'] = "bacs"
+  chekdata['set_paid'] = true
+  chekdata['shipping_lines'] = [{
+    method_id: "free_shipping",
+    method_title: "Free Shipping",
+    total: "0"
+    }]
+   // console.log(chekdata);
+//clearCart();
 processOrder(chekdata)
-  // console.log(event.target.elements.email.value);
-  // console.log(event.target.elements.fname.value);
-  // console.log(event.target.elements.lname.value);
+ 
 }
 
 
 componentDidMount(){
-   
-      //this.setState({ countries:  getCountry()});
+  getCartContent().then(result => {
+        this.setState({ cart: result, isLoaded: true });
+    });
+    getCartTotals().then(result => {
+
+      this.setState({ totals: result, isLoaded: true });
+    });
       getCountry().then(result => {
         // console.log(result)
         this.setState({ countries: result, isLoaded: true });
-    });
+      });
+        
 }
     render() {
-        console.log(this.state.countries);
-        const { email} = this.state;
         
+        const { billing_email, cart, totals, countries, billing_country, billing_state} = this.state;
+     
         return (
 
              <Container className="checkout_wrap">
@@ -50,14 +120,15 @@ componentDidMount(){
             <Row>
              
                 <Col>
- <Form onSubmit={this.chekoutSunmit}>
+ <Form onSubmit={this.chekoutSubmit}>
       <Form.Row>
         <Form.Group as={Col} md="6" controlId="validationCustom01">
           <Form.Label>First name</Form.Label>
           <Form.Control
             required
             type="text"
-             name="fname"
+            name="billing_first_name"
+           
             placeholder="First name"
             
           />
@@ -68,7 +139,8 @@ componentDidMount(){
           <Form.Control
             required
             type="text"
-             name="lname"
+             name="billing_last_name"
+             
             placeholder="Last name"
             
           />
@@ -79,47 +151,82 @@ componentDidMount(){
           <Form.Control
             required
             type="email"
-             name="email"
+             name="billing_email"
             placeholder="Email"
-            defaultValue={email}
+           
+            defaultValue={billing_email}
           />
           <Form.Control.Feedback>Looks good!</Form.Control.Feedback>
         </Form.Group>
+
+    <Form.Group as={Col} md="12" controlId="billing_phone">
+      <Form.Label>Phone</Form.Label>
+      <Form.Control 
+         required
+     type="text"
+    name="billing_phone"
+      />
+    </Form.Group>
          </Form.Row>
-         <Form.Group controlId="formControlsSelect">
+         <Form.Group >
               <Form.Label>Country</Form.Label>
-              <Form.Control as="select"  name="country">
-              <option>Choose...</option>
+              <Form.Control as="select"  required name="billing_country" id="billing_country" value={this.state.billing_country} onChange={this.handleChange}>
+              <option>Choose Country...</option>
+              {countries.map((item, i) => (
+								<option value={item.code} key={item.code}>{item.name}</option>
+								))}
              
               </Form.Control>
         </Form.Group>
          <Form.Group controlId="formGridAddress1">
     <Form.Label>Address</Form.Label>
-    <Form.Control placeholder="1234 Main St" />
+    <Form.Control 
+    required
+     type="text"
+    name="billing_address_1"
+    
+    placeholder="1234 Main St" />
   </Form.Group>
 
   <Form.Group controlId="formGridAddress2">
     <Form.Label>Address 2</Form.Label>
-    <Form.Control placeholder="Apartment, studio, or floor" />
+    <Form.Control 
+     required
+     type="text"
+    name="billing_address_2"
+   
+    placeholder="Apartment, studio, or floor" />
   </Form.Group>
 
   <Form.Row>
     <Form.Group as={Col} controlId="formGridCity">
       <Form.Label>City</Form.Label>
-      <Form.Control />
+      <Form.Control 
+         required
+     type="text"
+     
+    name="billing_city"
+      />
     </Form.Group>
 
-    <Form.Group as={Col} controlId="formGridState">
+    <Form.Group as={Col} >
       <Form.Label>State</Form.Label>
-      <Form.Control as="select">
-        <option>Choose...</option>
-        <option>...</option>
+      <Form.Control as="select" required name="billing_state" id="billing_state" value={this.state.billing_state} onChange={this.handleChange}>
+      <option>-- State / Province / Region --</option>
+									{ ( this.state.billing_country && 'select' != this.state.billing_country) ? this.state.billing_states.map((item, i) => (
+									<option value={item.code} key={item.code}>{item.name}</option>
+									)): '' }
       </Form.Control>
     </Form.Group>
 
     <Form.Group as={Col} controlId="formGridZip">
       <Form.Label>Zip</Form.Label>
-      <Form.Control />
+      <Form.Control 
+       required
+     type="text"
+     
+    name="billing_postcode"
+      />
     </Form.Group>
   </Form.Row>
 
@@ -136,7 +243,8 @@ componentDidMount(){
             </Row>
             </Container>
         );
-    }
+     
+  }
 }
 
 export default Checkout;

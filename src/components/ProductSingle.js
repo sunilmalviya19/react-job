@@ -14,7 +14,10 @@ import { addToCart } from "../actions";
              product_data: {},
              product_id: props.match.params.id,
              matchArr: [],
-             tempArr: []
+             tempArr: [],
+             product: '',
+             variation_id: '',
+             variation_price: ''
             
           }
     
@@ -105,7 +108,7 @@ import { addToCart } from "../actions";
 
   
   render () {
-      console.log(this.state.product_data);
+    //  console.log(this.state.product_data);
    
       
     if (!this.state.isLoaded) {
@@ -114,7 +117,7 @@ import { addToCart } from "../actions";
         );
      }
     
-   
+   let product_types = ['variable','variable-subscription'];
       
          return(
         <Container>
@@ -129,7 +132,7 @@ import { addToCart } from "../actions";
 								
 								<h2 className="single_title">{this.state.product_data.name}</h2>
 								
-									<div className="s_price">${this.state.product_data.price}</div>
+									<div className="s_price">${ this.state.variation_price || this.state.product_data.price }</div>
 
                   <div>
                      { this.state.product_data.attributes.map((val,index) => (
@@ -146,14 +149,14 @@ import { addToCart } from "../actions";
                                 }
                   </div>
                  
-        
-    <Button variant="outline-primary" className="add_to_cart_btn" onClick={() => {
-         addToCart({
-            product_id: this.state.product_data.id,
-            quantity: 1,
-            variation_id: this.state.variation_id
-        })
-    }}
+        <span>
+                  <label>Quantity:</label>
+                  <input onChange={(e) => this.handleChange('quantity',e.target.value)} type="number" value={ this.state.quantity || 1 } />
+                  
+                </span>
+    <Button variant="outline-primary" className="add_to_cart_btn" onClick={() => 
+         addToCart(this.state.product_id, this.state.quantity, this.state.variation_id)
+    }
     disabled={this.state.product_data.type=='variable' && !this.state.variation_id}>Add to cart</Button>
                                 <div dangerouslySetInnerHTML={{ __html: this.state.product_data.description}} />
                                     <div className="pro_description"> </div>

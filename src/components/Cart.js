@@ -2,44 +2,32 @@ import React, { Component } from "react";
 import axios from 'axios';
 import { Col, Row, Container, Button, Spinner, Table} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
-import { cartRoot, removeFromCart, getCartTotals, qtychangeCart, getProductimage, getData } from "../actions";
+import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart } from "../actions";
 class Cart extends Component {
   constructor(props) {
     super(props);
    // this.handleInputChange = this.handleInputChange.bind(this);
     this.state = {
+      cart: [],
 	  isLoaded:false,
     error: null,
-    totals:{},
-	  cart: []
+    totals:[]
+	  
     };
   }
   
   
   
   getAllCart(){
-    const that = this;
-    var token = localStorage.getItem('token');
-    var config = {
-        headers: {
-                'Content-Type':'application/json',
-                'Authorization': 'Bearer ' + token,
-               },
-              };
-
-return axios.get(cartRoot+'get-cart', config)
-           .then(res => {
-             console.log(res);
-          that.setState({
+   
+    return getCartContent().then(res => {
+          this.setState({
              isLoaded: true,
-             cart: res.data,
+             cart: res,
            })
-           return res.data;
-          
-           }).catch(err=>{
-            console.log('xxxxxxxxx xxxxxxxxxxxxx error ' + err);
+           return res;
            })
-
+    
   }
 
 
@@ -67,20 +55,33 @@ return axios.get(cartRoot+'get-cart', config)
   }
   
 	componentDidMount(){
+     var token = localStorage.getItem('token');
+    if( token )
+    {
      this.getAllCart();
-     getCartTotals().then(result => {
-      this.setState({ totals: result});
-    });
-   
+        getCartTotals().then(result => {
+        this.setState({ totals: result});
+       });
+   } else{
+      getLocalcart().then(result => {
+        this.setState({ cart: result, isLoaded: true });
+       
+      });
+      getCartTotals().then(result => {
+        this.setState({ totals: result});
+       });
+      
+    }
 	}
 
  
 
 cartList(){
+if (this.state.isLoaded) {
     return (
        Object.values(this.state.cart).map((item) => {
           return (
-        <tr key={item.key} id="{item.product_id}">
+        <tr key={item.product_id} id="{item.product_id}">
           <td className="cart_product">
            
            
@@ -103,7 +104,7 @@ cartList(){
      
 			</td>	
       <td className="cart_product">
-					{item.line_total}
+					{item.line_subtotal}
 			</td>	
 
        <td className="cart_product">
@@ -116,6 +117,7 @@ cartList(){
              );
       })    
     )
+   }
   }
 
 
@@ -146,11 +148,13 @@ cartList(){
 
 
   render() {
+   
 	  if (!this.state.isLoaded) {
             return (
                <Spinner animation="border" variant="primary" />
             );
          }
+          console.log(this.state.cart);
     return (
       <div>
         <Container>
