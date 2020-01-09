@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Col, Row, Container, Button, Form } from 'react-bootstrap';
 import {BrowserRouter as Router, Route, Link, Redirect} from 'react-router-dom';
 import axios from 'axios';
+import { getUserByEmail } from "../actions";
 import WooCommerce from '../Api';
 class Login extends Component {
   constructor(props) {
@@ -28,7 +29,8 @@ class Login extends Component {
 			        if(result.token){
 			        	console.log(result);
 						localStorage.setItem("token", result.token);
-						localStorage.setItem("user_email", result.user_email);
+            localStorage.setItem("user_email", result.user_email);
+            this.userDetails(result.user_email);
               localStorage.setItem("display_name", result.user_display_name);
 						this.setState({message: "User login successfully", redirectLogin: true});
            this.props.history.push("/");
@@ -49,6 +51,13 @@ handleChange(e){
 	  e.preventDefault();
 	  this.loginUser();
 		
+}
+userDetails(email) {
+  return getUserByEmail(email).then(result => {
+   
+   // console.log(result);
+    sessionStorage.setItem("user_id",result[0].id);
+  })
 }
     
   componentDidMount(){

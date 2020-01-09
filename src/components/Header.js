@@ -14,7 +14,7 @@ class Header extends Component {
  
   render() {
     var token = localStorage.getItem('token');
-    console.log(token);
+    // console.log(token);
     return (<header id="header">
     <div className="header_top">
     <ul className="menu">

@@ -2,24 +2,25 @@ import React, { Component } from "react";
 import axios from 'axios';
 import { Col, Row, Container, Button, Spinner, Table} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
-import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart } from "../actions";
+import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart, removeProductLocalCart } from "../actions";
 class Cart extends Component {
-  constructor(props) {
-    super(props);
+  constructor(props, state) {
+    super(props, state);
    // this.handleInputChange = this.handleInputChange.bind(this);
     this.state = {
       cart: [],
-	  isLoaded:false,
-    error: null,
-    totals:[]
+	    isLoaded:false,
+      error: null,
+      totals:[]
 	  
     };
+    console.log(props);
   }
   
   
   
   getAllCart(){
-   
+
     return getCartContent().then(res => {
           this.setState({
              isLoaded: true,
@@ -29,6 +30,8 @@ class Cart extends Component {
            })
     
   }
+
+  
 
 
    qtyChanged(qty, key) {
@@ -42,20 +45,34 @@ class Cart extends Component {
     });
   }
 
-  removeitem(key) {
-    removeFromCart(key).then(result => {
-      this.getAllCart().then(result => {
-          this.setState({ cart: result, isLoaded: true });
+  removeitem(key, product_id, variation_id) {
+    var token = localStorage.getItem('token');
+    if( token )
+    {
+      removeFromCart(key).then(result => {
+        this.getAllCart().then(result => {
+            this.setState({ cart: result, isLoaded: true });
+        });
+        getCartTotals().then(result => {
+          this.setState({ totals: result});
+        });
+      
       });
-      getCartTotals().then(result => {
-        this.setState({ totals: result});
+    }
+    else{
+      removeProductLocalCart(key, product_id, variation_id ).then(result => {
+        return getLocalcart().then(res => {
+          this.setState({ cart: res, isLoaded: true });
+        })
+      
       });
-    
-    });
+    }
+   
   }
   
 	componentDidMount(){
      var token = localStorage.getItem('token');
+     var localcart = localStorage.getItem('cart_content');
     if( token )
     {
      this.getAllCart();
@@ -63,13 +80,14 @@ class Cart extends Component {
         this.setState({ totals: result});
        });
    } else{
-      getLocalcart().then(result => {
-        this.setState({ cart: result, isLoaded: true });
-       
-      });
-      getCartTotals().then(result => {
-        this.setState({ totals: result});
-       });
+        if(localcart){
+         
+          getLocalcart().then(result => {
+            this.setState({ cart: result, isLoaded: true  });
+           
+          });
+        
+        }
       
     }
 	}
@@ -77,13 +95,14 @@ class Cart extends Component {
  
 
 cartList(){
-if (this.state.isLoaded) {
+  
+//if (this.state.isLoaded) {
     return (
        Object.values(this.state.cart).map((item) => {
           return (
         <tr key={item.product_id} id="{item.product_id}">
           <td className="cart_product">
-           
+         
            
 			</td>
       <td className="cart_product">
@@ -109,7 +128,7 @@ if (this.state.isLoaded) {
 
        <td className="cart_product">
        <Button variant="danger" onClick={() => {
-         this.removeitem(item.key)
+         this.removeitem(item.key,item.product_id,item.variation_id)
     }}>X</Button>
 			</td>					
 		</tr>
@@ -117,7 +136,7 @@ if (this.state.isLoaded) {
              );
       })    
     )
-   }
+   //}
   }
 
 

@@ -1,12 +1,10 @@
   import React, {Component, useState} from 'react';
   import { Col, Row, Container, Button, Form, Spinner } from 'react-bootstrap';
-  import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart } from "../actions";
+  import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart, getLocalcart } from "../actions";
 class Checkout extends Component {
      
  constructor(props, state) {
           super(props, state);
-         // localStorage.clear();
-         //console.log(getCountry());
           var user_email = localStorage.getItem('user_email');
             this.state = {
               isLoaded:false,
@@ -75,6 +73,7 @@ var chekdata =  { 'billing' : {
   Object.values(this.state.cart).map((item, i) => {
     var line_items = {};
     line_items['product_id'] = item.product_id
+    line_items['variation_id'] = item.variation_id
     line_items['quantity'] = item.quantity
     temp_items.push(line_items)
   })
@@ -87,17 +86,44 @@ var chekdata =  { 'billing' : {
     method_title: "Free Shipping",
     total: "0"
     }]
-   // console.log(chekdata);
-//clearCart();
-processOrder(chekdata)
+  
+//console.log(chekdata);
+processOrder(chekdata).then(result => {
  
+  //console.log(result.data.id);
+  if(result.data.id){
+    var token = localStorage.getItem('token');
+    if( token )
+      {
+        clearCart();
+      }else{
+        localStorage.removeItem("cart_content");
+      }
+    
+    this.props.history.push(`/thankyou/${result.data.id}`);
+  }
+
+});
+
 }
 
 
 componentDidMount(){
-  getCartContent().then(result => {
+  var token = localStorage.getItem('token');
+  if( token )
+    {
+      getCartContent().then(result => {
         this.setState({ cart: result, isLoaded: true });
     });
+   } else{
+      getLocalcart().then(result => {
+        this.setState({ cart: result, isLoaded: true });
+       
+      });
+     
+      
+    }
+  
     getCartTotals().then(result => {
 
       this.setState({ totals: result, isLoaded: true });
@@ -230,9 +256,7 @@ componentDidMount(){
     </Form.Group>
   </Form.Row>
 
-  <Form.Group id="formGridCheckbox">
-    <Form.Check type="checkbox" label="Agree to terms and conditions" />
-  </Form.Group>
+ 
       <Button variant="secondary" type="submit" className="place_ordr_btn">Place Order</Button>
     </Form>
                  

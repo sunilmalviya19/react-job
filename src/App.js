@@ -10,6 +10,7 @@ import Login from './components/Login';
 import Cart from './components/Cart';
 import Header from './components/Header';
 import Checkout from './components/Checkout';
+import Thankyou from './components/Thankyou';
 import Notifications, {notify} from 'react-notify-toast';
 
 
@@ -28,6 +29,7 @@ function App() {
           <Route exact path="/login" component={Login}/>
           <Route exact path="/cart" component={Cart}/>
            <Route exact path="/checkout" component={Checkout}/>
+           <Route exact path="/thankyou/:order_id" component={Thankyou}/>
           <Route exact path="/product/:id" component={ProductSingle}/>
           <Route exact path="/category/:id" component={CategoryPage}/>
           </Switch>

@@ -4,14 +4,16 @@ import {WooCommerceV3} from './Api';
 import axios from 'axios';
 import Notifications, {notify} from 'react-notify-toast';
 const cartRoot = WooCommerce.url;
-const cart_content = [];
+//var cart_content = [];
 export function postData(endpoint, request_data, token){
      //var token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        //'Authorization': 'Bearer ' + token
       }
-
+      if (token) {
+        headers["Authorization"] = "Bearer " + token;
+      }
     return axios.post(cartRoot + endpoint, request_data , {
         headers: headers
       })
@@ -26,6 +28,7 @@ export const Logout = () =>{
     localStorage.removeItem("token");
     localStorage.removeItem("user_email");
     localStorage.removeItem("display_name");
+    
     
 }
 export function getData(endpoint){
@@ -44,6 +47,9 @@ export function getData(endpoint){
      return err;
     })  
 }
+
+
+
 const addToCart = ( product_id, quantity, variation_id ) => {
   var token = localStorage.getItem('token');
   if( !quantity )
@@ -68,9 +74,16 @@ const addToCart = ( product_id, quantity, variation_id ) => {
         }
         else{
 
-            cart_content.push(req);
+            //cart_content.push(req);
             //console.log(cart_content);
-            localStorage.setItem("cart_content",JSON.stringify(cart_content));
+            let cart_content = [];
+            if(localStorage.getItem('cart_content')){
+              cart_content = JSON.parse(localStorage.getItem('cart_content'));
+             
+            }
+            cart_content.push(req);
+            localStorage.setItem('cart_content', JSON.stringify(cart_content));
+            //localStorage.setItem("cart_content",JSON.stringify(cart_content));
              notify.show("Added to cart", "custom", 5000, myColor);
         }
         
@@ -176,33 +189,36 @@ const qtychangeCart = (qty, cart_item_key) => {
   })  
 }
 
-const getAdminToken = () => {
-    var req = { username: 'admin', password: 'test123G' };
-  var apiHost = WooCommerce.url+'/wp-json';
-    fetch(apiHost + '/jwt-auth/v1/token', {
-            method: "POST",
-            body: JSON.stringify(req),
-            headers: {'Content-Type':'application/json'},
-        }).then((response) => response.json())
-                .then((result) => {
-              if(result.token){
-                //console.log(result);
-                return result.token;
-              }
-                   
-               }).catch((error) => {
-                  console.error(error);
-                });
-   
-  }
+ const getAdminToken =  () => {
+  var req = { username: 'admin', password: 'test123G' };
+  return postData("/wp-json/jwt-auth/v1/token", req).then(result => {
+    return result.data.token;
+  });
+}
 
-
-const processOrder = (orderData) => {
+export const getUserByEmail = (email) => {
+    return WooCommerceV3.getAsync("customers?email="+email).then(function(result) {
+      //console.log(email);
+      //console.log(result);
+      return JSON.parse(result.toJSON().body);
   
+  });
+}
+const processOrder = (orderData) => {
+  return getAdminToken().then(response => {
+       const token = response;
+       orderData['customer_id'] = sessionStorage.getItem('user_id');
+   return postData('/wp-json/wc/v3/orders', orderData , token).then((result) => {
+         console.log(result);
+          return result;
+       
+    })
+  })
  
- console.log(orderData);
 
-
+// WooCommerceV3.postAsync('orders', orderData).then(function(result) {
+//   console.log(result);
+// });
    
 }
 
@@ -221,6 +237,7 @@ export const getProduct = (id) => {
     return new Promise((resolve, reject) => {
     JSON.parse(cart).map((val,index) => {
       getProduct(val.product_id).then(result => {
+       
        temp_obj['product_id'] = result.id;
        temp_obj['variation_id'] = val.variation_id;
        temp_obj['quantity'] = val.quantity;
@@ -232,7 +249,21 @@ export const getProduct = (id) => {
       })
     })
     resolve(cart_content);
+    
     })
+}
+
+
+
+export const removeProductLocalCart = (key, productId, variation_id) => {
+  return new Promise((resolve, reject) => {
+    let storageProducts = JSON.parse(localStorage.getItem('cart_content'));
+    let products = storageProducts.filter(product => product.product_id != productId );
+    localStorage.setItem('cart_content', JSON.stringify(products));
+    resolve(products)
+});
+   
+  // return products;
 }
 export const clearCart = () =>{
     var token = localStorage.getItem('token');
@@ -242,6 +273,14 @@ export const clearCart = () =>{
            return result;
         })
    
+}
+
+
+export const getOrderById = (order_id) => {
+  return WooCommerceV3.getAsync("orders/"+order_id).then(function(result) {
+          return JSON.parse(result.toJSON().body)
+   
+  });
 }
 
   export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder, getCountry, getCartContent, getLocalcart };
