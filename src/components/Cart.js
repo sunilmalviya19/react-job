@@ -8,13 +8,13 @@ class Cart extends Component {
     super(props, state);
    // this.handleInputChange = this.handleInputChange.bind(this);
     this.state = {
+       isLoaded:false,
       cart: [],
-	    isLoaded:false,
       error: null,
       totals:[]
 	  
     };
-    console.log(props);
+
   }
   
   
@@ -96,7 +96,7 @@ class Cart extends Component {
 
 cartList(){
   
-//if (this.state.isLoaded) {
+if (this.state.isLoaded) {
     return (
        Object.values(this.state.cart).map((item) => {
           return (
@@ -136,7 +136,7 @@ cartList(){
              );
       })    
     )
-   //}
+   }
   }
 
 

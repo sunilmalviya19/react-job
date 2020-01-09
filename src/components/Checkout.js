@@ -1,5 +1,5 @@
   import React, {Component, useState} from 'react';
-  import { Col, Row, Container, Button, Form, Spinner } from 'react-bootstrap';
+  import { Col, Row, Container, Button, Form, Spinner, Table } from 'react-bootstrap';
   import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart, getLocalcart } from "../actions";
 class Checkout extends Component {
      
@@ -134,6 +134,37 @@ componentDidMount(){
       });
         
 }
+
+ChekcartList(){
+  
+if (this.state.isLoaded) {
+    return (
+       Object.values(this.state.cart).map((item) => {
+          return (
+        <tr key={item.product_id} id="{item.product_id}">
+          <td className="cart_product">
+         
+           
+      </td>
+      <td className="cart_product">
+      {item.product_name}
+      </td> 
+      <td className="cart_product">
+      {item.product_price}
+      </td> 
+      <td className="cart_product">
+          {item.quantity}
+      </td> 
+      <td className="cart_product">
+          {item.line_subtotal}
+      </td>        
+    </tr>
+             
+             );
+      })    
+    )
+   }
+  }
     render() {
         
         const { billing_email, cart, totals, countries, billing_country, billing_state} = this.state;
@@ -146,6 +177,24 @@ componentDidMount(){
             <Row>
              
                 <Col>
+                <div className="table-responsive cart_info">
+          <Table striped bordered hover className="table table-condensed">
+            <thead>
+              <tr className="cart_menu">
+                <td className="image">Item</td>
+                <td className="name">Name</td>
+                <td className="price">Price</td>
+                <td className="quantity">Quantity</td>
+                <td className="total">Total</td>
+                
+              </tr>
+            </thead>
+            <tbody>
+              {this.ChekcartList()}
+             
+            </tbody>
+          </Table>
+        </div>
  <Form onSubmit={this.chekoutSubmit}>
       <Form.Row>
         <Form.Group as={Col} md="6" controlId="validationCustom01">
