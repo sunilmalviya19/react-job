@@ -109,14 +109,11 @@ class Cart extends Component {
            this.setState({ cart: result, isLoaded: true });
            
          });
-         return sumTotalAmountLoacal().then(result => {
-          console.log(result)
-          
-        });
+         
         
        }
       
-      // this.setState({ isLoaded: true });
+       this.setState({ isLoaded: true });
    }
 	}
  
