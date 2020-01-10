@@ -144,12 +144,15 @@ const addToCart = ( product_id, quantity, variation_id ) => {
 }
 
 const getProductimage = (product_id) => {
+return new Promise((resolve, reject) => {
   WooCommerce.getAsync('products/'+product_id)
     .then(function(result) {
       var product_data = JSON.parse(result.toJSON().body);
       //console.log(product_data.images[0].src);
-        return product_data.images[0].src;
+       // return product_data.images[0].src;
+        resolve(product_data.images[0].src);
       })
+     });
 }
 
 const getCountry = () => {
@@ -267,12 +270,14 @@ export const getProduct = (id) => {
         JSON.parse(cart).map((val,index) => {
         
           getProduct(val.product_id).then(result => {
+           // console.log(result);
            temp_obj['product_id'] = result.id;
            temp_obj['variation_id'] = val.variation_id;
            temp_obj['quantity'] = val.quantity;
            temp_obj['product_name'] = result.name;
            temp_obj['product_price'] = result.price;
            temp_obj['line_subtotal'] = parseFloat( result.price ) * val.quantity;
+           temp_obj['product_image'] = result.images[0].src;
           cart_content.push(temp_obj);
            temp_obj = {};
            })
@@ -280,7 +285,8 @@ export const getProduct = (id) => {
          })
        
          
-        resolve(cart_content);
+        //resolve(JSON.parse(cart));
+       resolve(cart_content);
         
         })   
 }

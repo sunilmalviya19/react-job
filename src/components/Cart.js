@@ -126,9 +126,11 @@ cartList(){
 if (this.state.isLoaded) {
     return (
        Object.values(this.state.cart).map((item) => {
+       
           return (
         <tr key={item.variation_id ?  (item.variation_id) : (item.product_id)} id="{item.product_id}">
           <td className="cart_product">
+          <img width="100px" alt="product" src={item.product_image} />
 			</td>
       <td className="cart_product">
       {item.product_name}
