@@ -23,7 +23,7 @@ class Checkout extends Component {
               billing_phone: '',
               billing_email: user_email
              }
-          
+        
         }
 
 
@@ -165,6 +165,31 @@ if (this.state.isLoaded) {
     )
    }
   }
+
+  cartTotals(){
+   
+    return (
+      <div className="total_box"> 
+      <Row>
+      <Col xs={3}>
+          <h5>Subtotal</h5>
+          </Col>
+          <Col xs={9}>
+          {this.state.totals.subtotal}
+          </Col>
+          <Col xs={3}>
+          <h5>Total</h5>
+          </Col>
+          <Col xs={9}>
+          {this.state.totals.cart_contents_total}
+          </Col>
+      </Row>        
+    </div> 
+      )
+     
+}
+
+  
     render() {
         
         const { billing_email, cart, totals, countries, billing_country, billing_state} = this.state;
@@ -191,10 +216,14 @@ if (this.state.isLoaded) {
             </thead>
             <tbody>
               {this.ChekcartList()}
+              
              
             </tbody>
           </Table>
+          
         </div>
+        {this.cartTotals()}
+       
  <Form onSubmit={this.chekoutSubmit}>
       <Form.Row>
         <Form.Group as={Col} md="6" controlId="validationCustom01">
@@ -304,7 +333,7 @@ if (this.state.isLoaded) {
       />
     </Form.Group>
   </Form.Row>
-
+  
  
       <Button variant="secondary" type="submit" className="place_ordr_btn">Place Order</Button>
     </Form>

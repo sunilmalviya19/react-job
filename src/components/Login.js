@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Col, Row, Container, Button, Form } from 'react-bootstrap';
 import {BrowserRouter as Router, Route, Link, Redirect} from 'react-router-dom';
 import axios from 'axios';
-import { getUserByEmail } from "../actions";
+import { getUserByEmail, getLocalcart, addToCart } from "../actions";
 import WooCommerce from '../Api';
 class Login extends Component {
   constructor(props) {
@@ -32,8 +32,14 @@ class Login extends Component {
             localStorage.setItem("user_email", result.user_email);
             this.userDetails(result.user_email);
               localStorage.setItem("display_name", result.user_display_name);
-						this.setState({message: "User login successfully", redirectLogin: true});
-           this.props.history.push("/");
+            this.setState({message: "User login successfully", redirectLogin: true});
+            var cart = localStorage.getItem('cart_content');
+         JSON.parse(cart).map((val,index) => {
+          addToCart(val.product_id, val.quantity, val.variation_id)
+          
+          })
+          localStorage.removeItem("cart_content");
+          this.props.history.push("/");
 					}
                    
                 })

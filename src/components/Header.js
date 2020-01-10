@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import { Logout } from "../actions";
-
+import { withRouter } from "react-router-dom";
 class Header extends Component {
   constructor(props) {
     super(props);
@@ -16,6 +16,7 @@ class Header extends Component {
     var token = localStorage.getItem('token');
     // console.log(token);
     return (<header id="header">
+     
     <div className="header_top">
     <ul className="menu">
                 <li>
@@ -43,4 +44,5 @@ class Header extends Component {
     )
   }
 }
-export default Header;
+//export default Header;
+export default withRouter(Header);

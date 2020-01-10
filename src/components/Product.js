@@ -5,7 +5,6 @@ import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import SideMenu from './SideMenu';
 import axios from 'axios';
 
-
  class Product extends Component {
        constructor(props) {
           super(props);
@@ -89,7 +88,7 @@ import axios from 'axios';
 //render  list
   render () {
       console.log(this.state.currentPage);
-      
+     
       const all_page = this.state.total_items / this.state.per_page_product;
       let active = this.state.currentPage;
       let Pitems = [];   

@@ -4,7 +4,6 @@ import {WooCommerceV3} from './Api';
 import axios from 'axios';
 import Notifications, {notify} from 'react-notify-toast';
 const cartRoot = WooCommerce.url;
-//var cart_content = [];
 export function postData(endpoint, request_data, token){
      //var token = localStorage.getItem('token');
     const headers = {
@@ -48,7 +47,13 @@ export function getData(endpoint){
     })  
 }
 
-
+const checkProduct = (productID, variation_id) => {
+  let cart = JSON.parse(localStorage.getItem('cart_content'));
+  return cart.some(function(item) {
+   // console.log(variation_id);
+    return variation_id ?  (item.variation_id == variation_id) : (item.product_id == productID);
+  });
+}
 
 const addToCart = ( product_id, quantity, variation_id ) => {
   var token = localStorage.getItem('token');
@@ -62,6 +67,7 @@ const addToCart = ( product_id, quantity, variation_id ) => {
     }
     else{
         var req = {product_id:product_id,quantity:quantity}
+       
     }
     let myColor = { background: 'green', text: "#FFFFFF", top: "20px" };
     
@@ -79,21 +85,48 @@ const addToCart = ( product_id, quantity, variation_id ) => {
             let cart_content = [];
             if(localStorage.getItem('cart_content')){
               cart_content = JSON.parse(localStorage.getItem('cart_content'));
-             
+              if(checkProduct(product_id, variation_id)){
+              let index = cart_content.findIndex(x => 
+                variation_id ?  (x.variation_id == variation_id) : (x.product_id == product_id));
+                cart_content[index].quantity =
+                Number(cart_content[index].quantity) + Number(quantity);
+              }else{
+                cart_content.push(req);
+              }
+              
+            
+            }else{
+              cart_content.push(req);
             }
-            cart_content.push(req);
-            localStorage.setItem('cart_content', JSON.stringify(cart_content));
-            //localStorage.setItem("cart_content",JSON.stringify(cart_content));
+            
+           
+            localStorage.setItem("cart_content",JSON.stringify(cart_content));
              notify.show("Added to cart", "custom", 5000, myColor);
         }
         
        
   }
-
+  const updateqtyLocalcart = (qty, product_id, variation_id) => {
+    return new Promise((resolve, reject) => {
+        let cart_content = JSON.parse(localStorage.getItem('cart_content'));
+        
+        if(checkProduct(product_id, variation_id)){
+          let index = cart_content.findIndex(x => 
+          variation_id ?  (x.variation_id == variation_id) : (x.product_id == product_id));
+          //console.log(Number(cart_content[index].quantity));
+          cart_content[index].quantity = Number(qty);
+          
+          localStorage.setItem('cart_content', JSON.stringify(cart_content));
+          
+        }
+        resolve(cart_content)
+     });
+          
+  }
 
   const removeFromCart = (cart_item_key) => {
     var token = localStorage.getItem('token');
-    console.log(cart_item_key);
+    //console.log(cart_item_key);
     const headers = {
         'Authorization': 'Bearer ' + token
       }
@@ -214,11 +247,6 @@ const processOrder = (orderData) => {
        
     })
   })
- 
-
-// WooCommerceV3.postAsync('orders', orderData).then(function(result) {
-//   console.log(result);
-// });
    
 }
 
@@ -234,31 +262,53 @@ export const getProduct = (id) => {
     var cart_content = [];
     var temp_obj = {};
     var cart = localStorage.getItem('cart_content');
-    return new Promise((resolve, reject) => {
-    JSON.parse(cart).map((val,index) => {
-      getProduct(val.product_id).then(result => {
+ 
+      return new Promise((resolve, reject) => {
+        JSON.parse(cart).map((val,index) => {
+        
+          getProduct(val.product_id).then(result => {
+           temp_obj['product_id'] = result.id;
+           temp_obj['variation_id'] = val.variation_id;
+           temp_obj['quantity'] = val.quantity;
+           temp_obj['product_name'] = result.name;
+           temp_obj['product_price'] = result.price;
+           temp_obj['line_subtotal'] = parseFloat( result.price ) * val.quantity;
+          cart_content.push(temp_obj);
+           temp_obj = {};
+           })
+           
+         })
        
-       temp_obj['product_id'] = result.id;
-       temp_obj['variation_id'] = val.variation_id;
-       temp_obj['quantity'] = val.quantity;
-       temp_obj['product_name'] = result.name;
-       temp_obj['product_price'] = result.price;
-       temp_obj['line_subtotal'] = parseFloat( result.price ) * val.quantity;
-       cart_content.push(temp_obj);
-       temp_obj = {};
-      })
-    })
-    resolve(cart_content);
-    
-    })
+         
+        resolve(cart_content);
+        
+        })   
 }
-
+export const sumTotalAmountLoacal = () => {
+  let total = 0;
+  let cart = localStorage.getItem('cart_content');
+  return new Promise((resolve, reject) => {
+  
+  JSON.parse(cart).map((val,index) => {
+    //console.log(val.product_id);
+   getProduct(val.product_id).then(result => {
+    const currentImport = parseFloat( result.price ) * val.quantity;;
+     
+      return  total += currentImport;
+     })
+     console.log(total);
+   })
+   
+  resolve(total);
+    
+  })
+}
 
 
 export const removeProductLocalCart = (key, productId, variation_id) => {
   return new Promise((resolve, reject) => {
     let storageProducts = JSON.parse(localStorage.getItem('cart_content'));
-    let products = storageProducts.filter(product => product.product_id != productId );
+    let products = storageProducts.filter(product => variation_id ?  (product.variation_id != variation_id) : (product.product_id != productId));
     localStorage.setItem('cart_content', JSON.stringify(products));
     resolve(products)
 });
@@ -283,6 +333,6 @@ export const getOrderById = (order_id) => {
   });
 }
 
-  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder, getCountry, getCartContent, getLocalcart };
+  export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder, getCountry, getCartContent, getLocalcart, updateqtyLocalcart };
 
 

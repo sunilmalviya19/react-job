@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import axios from 'axios';
 import { Col, Row, Container, Button, Spinner, Table} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
-import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart, removeProductLocalCart } from "../actions";
+import EmptyCart from './EmptyCart';
+import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart, removeProductLocalCart, updateqtyLocalcart, sumTotalAmountLoacal } from "../actions";
 class Cart extends Component {
   constructor(props, state) {
     super(props, state);
@@ -14,7 +15,7 @@ class Cart extends Component {
       totals:[]
 	  
     };
-
+   
   }
   
   
@@ -31,18 +32,36 @@ class Cart extends Component {
     
   }
 
-  
+  handleChange = e => {
+    var state = {};
+    state[e.target.name] =
+      e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    this.setState(state);
+  }
 
 
-   qtyChanged(qty, key) {
-    qtychangeCart(qty, key).then(result => {
-      this.getAllCart().then(result => {
-          this.setState({ cart: result, isLoaded: true });
-      });
-      getCartTotals().then(result => {
-        this.setState({ totals: result});
-      });
-    });
+   qtyChanged(qty, key, product_id, variation_id) {
+        var token = localStorage.getItem('token');
+        if( token )
+        {
+        qtychangeCart(qty, key).then(result => {
+          this.getAllCart().then(result => {
+              this.setState({ cart: result, isLoaded: true });
+          });
+          getCartTotals().then(result => {
+            this.setState({ totals: result});
+          });
+        });
+      }
+      else{
+       
+        updateqtyLocalcart(qty, product_id, variation_id).then(result => {
+          getLocalcart().then(res => {
+            this.setState({ cart: res, isLoaded: true });
+          })
+        
+        });
+      }
   }
 
   removeitem(key, product_id, variation_id) {
@@ -62,6 +81,7 @@ class Cart extends Component {
     else{
       removeProductLocalCart(key, product_id, variation_id ).then(result => {
         return getLocalcart().then(res => {
+         
           this.setState({ cart: res, isLoaded: true });
         })
       
@@ -69,29 +89,36 @@ class Cart extends Component {
     }
    
   }
-  
-	componentDidMount(){
-     var token = localStorage.getItem('token');
-     var localcart = localStorage.getItem('cart_content');
-    if( token )
-    {
-     this.getAllCart();
-        getCartTotals().then(result => {
-        this.setState({ totals: result});
-       });
-   } else{
-        if(localcart){
-         
-          getLocalcart().then(result => {
-            this.setState({ cart: result, isLoaded: true  });
-           
-          });
+ 
+	
+  componentDidMount(){
+   
+    var token = localStorage.getItem('token');
+    var localcart = localStorage.getItem('cart_content');
+   if( token )
+   {
+    this.getAllCart();
+       getCartTotals().then(result => {
         
-        }
+       this.setState({ totals: result});
+      });
+  } else{
+       if(localcart){
+        
+         getLocalcart().then(result => {
+           this.setState({ cart: result, isLoaded: true });
+           
+         });
+         return sumTotalAmountLoacal().then(result => {
+          console.log(result)
+          
+        });
+        
+       }
       
-    }
+      // this.setState({ isLoaded: true });
+   }
 	}
-
  
 
 cartList(){
@@ -100,10 +127,8 @@ if (this.state.isLoaded) {
     return (
        Object.values(this.state.cart).map((item) => {
           return (
-        <tr key={item.product_id} id="{item.product_id}">
+        <tr key={item.variation_id ?  (item.variation_id) : (item.product_id)} id="{item.product_id}">
           <td className="cart_product">
-         
-           
 			</td>
       <td className="cart_product">
       {item.product_name}
@@ -112,13 +137,21 @@ if (this.state.isLoaded) {
       {item.product_price}
 			</td>	
       <td className="cart_product">
-      <Button variant="info" onClick={() => {
-         this.qtyChanged(item.quantity-1, item.key)
-    }}>-</Button>
      
-					{item.quantity}
+                          <Button variant="info" onClick={() => {
+         this.qtyChanged(--item.quantity, item.key, item.product_id, item.variation_id)
+    }}>-</Button>
+           <input
+                              className="cart_quantity_input"
+                              type="text"
+                              name="quantity"
+                              onChange={this.handleChange}
+                              value={ item.quantity }
+                              size="2"
+                            />
+				
           <Button variant="info" onClick={() => {
-         this.qtyChanged(item.quantity+1, item.key)
+         this.qtyChanged(++item.quantity, item.key, item.product_id, item.variation_id)
     }}>+</Button>
      
 			</td>	
@@ -137,6 +170,8 @@ if (this.state.isLoaded) {
       })    
     )
    }
+   
+   
   }
 
 
@@ -164,42 +199,50 @@ if (this.state.isLoaded) {
   }
   
 
-
+  
 
   render() {
-   
-	  if (!this.state.isLoaded) {
-            return (
-               <Spinner animation="border" variant="primary" />
-            );
-         }
+    //console.log(this.state.isLoaded);
+    if (!this.state.isLoaded) {
+      return (
+         <Spinner animation="border" variant="primary" />
+      );
+   }
           console.log(this.state.cart);
+          if (this.state.cart.length <= 0) {
+            return (
+              < EmptyCart />
+           );
+          }else{
+          
     return (
       <div>
         <Container>
-		<div className="table-responsive cart_info">
-					<Table striped bordered hover className="table table-condensed">
-						<thead>
-							<tr className="cart_menu">
-								<td className="image">Item</td>
-								<td className="name">Name</td>
-								<td className="price">Price</td>
-								<td className="quantity">Quantity</td>
-								<td className="total">Total</td>
-								<td></td>
-							</tr>
-						</thead>
-						<tbody>
-							{this.cartList()}
-             
-						</tbody>
-					</Table>
-				</div>
-        {this.cartTotals()}
-        <Button variant="primary" className="checkout_btn" size="lg" href={`/checkout`}>Checkout</Button>
+    <div className="table-responsive cart_info">
+      <Table striped bordered hover className="table table-condensed">
+        <thead>
+          <tr className="cart_menu">
+            <td className="image">Item</td>
+            <td className="name">Name</td>
+            <td className="price">Price</td>
+            <td className="quantity">Quantity</td>
+            <td className="total">Total</td>
+            <td></td>
+          </tr>
+        </thead>
+        <tbody>
+          {this.cartList()}
+         
+        </tbody>
+      </Table>
+    </div>
+    {this.cartTotals()}
+    <Button variant="primary" className="checkout_btn" size="lg" href={`/checkout`}>Checkout</Button>
+      
        </Container>
       </div>
     );
+   }
   }
 }
 export default Cart;
