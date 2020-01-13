@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Col, Row, Container, Button, Spinner, Table} from 'react-bootstrap';
 import NumericInput from 'react-numeric-input';
 import EmptyCart from './EmptyCart';
-import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart, removeProductLocalCart, updateqtyLocalcart, sumTotalAmountLoacal } from "../actions";
+import { cartRoot, removeFromCart, getCartContent, getCartTotals, qtychangeCart, getProductimage, getData, getLocalcart, removeProductLocalCart, updateqtyLocalcart, getLocalTotals } from "../actions";
 class Cart extends Component {
   constructor(props, state) {
     super(props, state);
@@ -80,7 +80,7 @@ class Cart extends Component {
     }
     else{
       removeProductLocalCart(key, product_id, variation_id ).then(result => {
-        return getLocalcart().then(res => {
+         getLocalcart().then(res => {
          
           this.setState({ cart: res, isLoaded: true });
         })
@@ -110,6 +110,10 @@ class Cart extends Component {
            
          });
          
+         getLocalTotals().then(result => {
+          console.log(result)
+          this.setState({ totals: result});
+        });
         
        }
       

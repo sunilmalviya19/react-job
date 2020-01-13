@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import { Col, Row, Container, Button, Form } from 'react-bootstrap';
 import {BrowserRouter as Router, Route, Link, Redirect} from 'react-router-dom';
 import axios from 'axios';
-import { getUserByEmail, getLocalcart, addToCart } from "../actions";
+import { getUserByEmail, getLocalcart, addToCart, signUp } from "../actions";
+import Notifications, {notify} from 'react-notify-toast';
 import WooCommerce from '../Api';
 class Login extends Component {
   constructor(props) {
@@ -10,7 +11,9 @@ class Login extends Component {
     this.state = {
     error: null,
 	  email: '',
-	  password: '',
+    password: '',
+    reguser: "",
+    regpass: "",
     };
   }
 
@@ -58,6 +61,12 @@ handleChange(e){
 	  this.loginUser();
 		
 }
+
+signuphandleChange = (e) => {
+  e.preventDefault();
+  this.registerUser();
+  
+}
 userDetails(email) {
   return getUserByEmail(email).then(result => {
    
@@ -65,10 +74,31 @@ userDetails(email) {
     sessionStorage.setItem("user_id",result[0].id);
   })
 }
+registerUser(){
+  let req = {
+      username: this.state.reguser,
+      email: this.state.email,
+      password: this.state.regpass 
+    }
+
+    signUp(req).then(result => {
+      let myColor = { background: 'green', text: "#FFFFFF", top: "150px" };
+     // console.log(result)
+      if(result.data.id )
+      {
+        this.setState({
+          message1: "Register user successfully",
+          redirectLogin: true
+        });
+        notify.show("Register user successfully please login", "custom", 5000, myColor);
+      }
+    });
+}
+
     
   componentDidMount(){
-    this.loginUser();
-   
+    //this.loginUser();
+   //this.registerUser();
   }
 
   
@@ -77,20 +107,47 @@ userDetails(email) {
     return (
       <div>
        <Container>
+       <Row>
+<Col xs={5}>
+<h2>Login</h2>
        <Form onSubmit={this.shandleChange} className="login_box">
   <Form.Group controlId="formBasicEmail">
     <Form.Label>Email address</Form.Label>
-    <Form.Control type="email" placeholder="Enter email" name="email" onChange={(e) => this.handleChange(e)}/>
+    <Form.Control required type="email" placeholder="Enter email" name="email" onChange={(e) => this.handleChange(e)}/>
   </Form.Group>
   <Form.Group controlId="formBasicPassword">
     <Form.Label>Password</Form.Label>
-    <Form.Control type="password" name="password" placeholder="Password"  onChange={(e) => this.handleChange(e)}/>
+    <Form.Control required type="password" name="password" placeholder="Password"  onChange={(e) => this.handleChange(e)}/>
   </Form.Group>
   <Button variant="primary" type="submit" >
-    Submit
+    Login
   </Button>
-</Form>
-      
+</Form> 
+</Col>
+<Col xs={1}>
+<h2 className="or">OR</h2>
+</Col>
+<Col xs={6}>
+<h2>New User Signup!</h2>
+<Form onSubmit={this.signuphandleChange} className="signup-form">
+<Form.Group >
+    <Form.Label>Name</Form.Label>
+    <Form.Control required type="text" placeholder="username" name="reguser" onChange={(e) => this.handleChange(e)}/>
+  </Form.Group>
+  <Form.Group >
+    <Form.Label>Email address</Form.Label>
+    <Form.Control required type="email" placeholder="Enter email" name="email" onChange={(e) => this.handleChange(e)}/>
+  </Form.Group>
+  <Form.Group >
+    <Form.Label>Password</Form.Label>
+    <Form.Control required type="password" name="regpass" placeholder="Password"  onChange={(e) => this.handleChange(e)}/>
+  </Form.Group>
+  <Button variant="primary" type="submit" >
+  Signup
+  </Button>
+</Form> 
+</Col>
+</Row>
        </Container>
        </div>
     );

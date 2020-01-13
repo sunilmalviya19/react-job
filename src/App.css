@@ -116,7 +116,7 @@ button.add_to_cart_btn {
 form.login_box {
   margin: auto;
   text-align: left;
-  width: 50%;
+  /* width: 50%; */
   background-color: #f2f2f2;
   padding: 30px;
   margin-top: 50px;
@@ -141,4 +141,17 @@ a.checkout_btn {
 button.place_ordr_btn {
   width: 30%;
   padding: 10px;
+}
+
+form.signup-form {
+  margin: auto;
+  text-align: left;
+  /* width: 50%; */
+  background-color: #f2f2f2;
+  padding: 30px;
+  margin-top: 50px;
+}
+
+h2.or {
+  margin-top: 200px;
 }

@@ -57,18 +57,21 @@ const checkProduct = (productID, variation_id) => {
 
 const addToCart = ( product_id, quantity, variation_id ) => {
   var token = localStorage.getItem('token');
+ 
   if( !quantity )
     {
         quantity = 1;
     }
 
     if(variation_id){
-         var req = {product_id:product_id,quantity:quantity,variation_id:variation_id}
+         var req = {product_id:product_id,quantity:quantity,variation_id:variation_id} 
     }
     else{
         var req = {product_id:product_id,quantity:quantity}
-       
     }
+
+   
+    
     let myColor = { background: 'green', text: "#FFFFFF", top: "20px" };
     
   
@@ -82,6 +85,8 @@ const addToCart = ( product_id, quantity, variation_id ) => {
 
             //cart_content.push(req);
             //console.log(cart_content);
+          
+              
             let cart_content = [];
             if(localStorage.getItem('cart_content')){
               cart_content = JSON.parse(localStorage.getItem('cart_content'));
@@ -90,17 +95,33 @@ const addToCart = ( product_id, quantity, variation_id ) => {
                 variation_id ?  (x.variation_id == variation_id) : (x.product_id == product_id));
                 cart_content[index].quantity =
                 Number(cart_content[index].quantity) + Number(quantity);
+                localStorage.setItem("cart_content",JSON.stringify(cart_content));
               }else{
-                cart_content.push(req);
+                //cart_content.push(req);
+                getProduct(product_id).then(result => {
+                  req['product_name'] = result.name;
+                  req['product_price'] = result.price;
+                  req['line_subtotal'] = parseFloat( result.price ) * quantity;
+                  req['product_image'] = result.images[0].src;
+                  cart_content.push(req); 
+                  localStorage.setItem("cart_content",JSON.stringify(cart_content));
+                })
               }
               
-            
             }else{
-              cart_content.push(req);
+             // cart_content.push(req);
+              getProduct(product_id).then(result => {
+                req['product_name'] = result.name;
+                req['product_price'] = result.price;
+                req['line_subtotal'] = parseFloat( result.price ) * quantity;
+                req['product_image'] = result.images[0].src;
+                cart_content.push(req); 
+                localStorage.setItem("cart_content",JSON.stringify(cart_content));
+              })
+             
             }
             
            
-            localStorage.setItem("cart_content",JSON.stringify(cart_content));
              notify.show("Added to cart", "custom", 5000, myColor);
         }
         
@@ -115,6 +136,7 @@ const addToCart = ( product_id, quantity, variation_id ) => {
           variation_id ?  (x.variation_id == variation_id) : (x.product_id == product_id));
           //console.log(Number(cart_content[index].quantity));
           cart_content[index].quantity = Number(qty);
+          cart_content[index].line_subtotal = cart_content[index].product_price * Number(qty);
           
           localStorage.setItem('cart_content', JSON.stringify(cart_content));
           
@@ -262,54 +284,27 @@ export const getProduct = (id) => {
 }
 
  const getLocalcart = () => {
-    var cart_content = [];
+   const  cart_content = [];
     var temp_obj = {};
     var cart = localStorage.getItem('cart_content');
- 
       return new Promise((resolve, reject) => {
-        JSON.parse(cart).map((val,index) => {
-        
-          getProduct(val.product_id).then(result => {
-           // console.log(result);
-           temp_obj['product_id'] = result.id;
-           temp_obj['variation_id'] = val.variation_id;
-           temp_obj['quantity'] = val.quantity;
-           temp_obj['product_name'] = result.name;
-           temp_obj['product_price'] = result.price;
-           temp_obj['line_subtotal'] = parseFloat( result.price ) * val.quantity;
-           temp_obj['product_image'] = result.images[0].src;
-          cart_content.push(temp_obj);
-           temp_obj = {};
-           })
-           
-         })
-       
-         
-        //resolve(JSON.parse(cart));
-       resolve(cart_content);
-        
+         resolve(JSON.parse(cart));
         })   
 }
-export const sumTotalAmountLoacal = () => {
-  let total = 0;
-  let cart = localStorage.getItem('cart_content');
+
+
+export const getLocalTotals = () => {
+  var cart = localStorage.getItem('cart_content');
+  var total = 0; var all_totals = {};
   return new Promise((resolve, reject) => {
-  
-  JSON.parse(cart).map((val,index) => {
-    //console.log(val.product_id);
-   getProduct(val.product_id).then(result => {
-    const currentImport = parseFloat( result.price ) * val.quantity;;
-     
-      return  total += currentImport;
-     })
-     console.log(total);
-   })
-   
-  resolve(total);
-    
+      JSON.parse(cart).map((val,index) => {
+          total += val.line_subtotal;
+          all_totals.subtotal = total;
+          all_totals.total = total;
+      })
+      resolve(all_totals);
   })
 }
-
 
 export const removeProductLocalCart = (key, productId, variation_id) => {
   return new Promise((resolve, reject) => {
@@ -339,6 +334,19 @@ export const getOrderById = (order_id) => {
   });
 }
 
+export const signUp = (req) => {
+  return new Promise((resolve, reject) => {
+    getAdminToken().then(result => {
+          if( result )
+          {
+            postData("/wp-json/wc/v3/customers", req , result).then((result) => {
+             // console.log(result)
+                  resolve(result)
+              })
+          }
+      })
+  })
+}
   export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder, getCountry, getCartContent, getLocalcart, updateqtyLocalcart };
 
 
