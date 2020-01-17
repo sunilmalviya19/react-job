@@ -155,3 +155,6 @@ form.signup-form {
 h2.or {
   margin-top: 200px;
 }
+.table-responsive.cart_info tr a h4 {
+    font-size: 13px;
+}

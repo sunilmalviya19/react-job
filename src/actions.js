@@ -98,7 +98,7 @@ const addToCart = ( product_id, quantity, variation_id ) => {
                 localStorage.setItem("cart_content",JSON.stringify(cart_content));
               }else{
                 //cart_content.push(req);
-                getProduct(product_id).then(result => {
+                getProduct(product_id, variation_id).then(result => {
                   req['product_name'] = result.name;
                   req['product_price'] = result.price;
                   req['line_subtotal'] = parseFloat( result.price ) * quantity;
@@ -110,7 +110,7 @@ const addToCart = ( product_id, quantity, variation_id ) => {
               
             }else{
              // cart_content.push(req);
-              getProduct(product_id).then(result => {
+              getProduct(product_id, variation_id).then(result => {
                 req['product_name'] = result.name;
                 req['product_price'] = result.price;
                 req['line_subtotal'] = parseFloat( result.price ) * quantity;
@@ -135,10 +135,16 @@ const addToCart = ( product_id, quantity, variation_id ) => {
           let index = cart_content.findIndex(x => 
           variation_id ?  (x.variation_id == variation_id) : (x.product_id == product_id));
           //console.log(Number(cart_content[index].quantity));
-          cart_content[index].quantity = Number(qty);
+          
+          if(qty==0){
+            removeProductLocalCart('', product_id, variation_id );
+          }else{
+            cart_content[index].quantity = Number(qty);
           cart_content[index].line_subtotal = cart_content[index].product_price * Number(qty);
           
           localStorage.setItem('cart_content', JSON.stringify(cart_content));
+          }
+          
           
         }
         resolve(cart_content)
@@ -248,9 +254,10 @@ const qtychangeCart = (qty, cart_item_key) => {
 }
 
  const getAdminToken =  () => {
-  var req = { username: 'admin', password: 'test123G' };
+  var req = { username: 'admin', password: 'sunil1990' };
   return postData("/wp-json/jwt-auth/v1/token", req).then(result => {
-    return result.data.token;
+    console.log(result)
+   // return result.data.token;
   });
 }
 
@@ -275,12 +282,42 @@ const processOrder = (orderData) => {
    
 }
 
-export const getProduct = (id) => {
-    return new Promise((resolve, reject) => {
-        WooCommerce.getAsync('products/'+id).then(function(result) {
-            resolve(JSON.parse(result.toJSON().body));
-        })
-    });
+export const getProduct = (product_id, variation_id) => {
+  if( variation_id )
+    {  
+        return new Promise((resolve, reject) => {
+            var option = '';
+            WooCommerce.getAsync('products/'+product_id).then(function(result) {
+                var data = JSON.parse(result.toJSON().body);
+                   console.log(data)
+                WooCommerceV3.getAsync('products/'+product_id+'/variations/'+variation_id).then(function(res) {
+                    var data1 = JSON.parse(res.toJSON().body);
+                    
+                    data1.attributes.map((val,index) =>{
+                        option = option +' '+val.option+', '
+                    })
+                    
+                    data1.name = data.name+'- '+option;
+                     data1.images = data.images;
+                    console.log(data1);
+                    resolve(data1);
+                })
+            })
+ 
+        });
+    }
+    else{
+        return new Promise((resolve, reject) => {
+            WooCommerce.getAsync('products/'+product_id).then(function(result) {
+                resolve(JSON.parse(result.toJSON().body));
+            })
+        });
+    }
+    // return new Promise((resolve, reject) => {
+    //     WooCommerce.getAsync('products/'+id).then(function(result) {
+    //         resolve(JSON.parse(result.toJSON().body));
+    //     })
+    // });
 }
 
  const getLocalcart = () => {
@@ -299,8 +336,8 @@ export const getLocalTotals = () => {
   return new Promise((resolve, reject) => {
       JSON.parse(cart).map((val,index) => {
           total += val.line_subtotal;
-          all_totals.subtotal = total;
-          all_totals.total = total;
+          all_totals.subtotal = total.toFixed(2);
+          all_totals.total = total.toFixed(2);
       })
       resolve(all_totals);
   })

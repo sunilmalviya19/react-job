@@ -9,7 +9,7 @@ class Cart extends Component {
     super(props, state);
    // this.handleInputChange = this.handleInputChange.bind(this);
     this.state = {
-       isLoaded:false,
+      isLoaded:false,
       cart: [],
       error: null,
       totals:[]
@@ -41,12 +41,18 @@ class Cart extends Component {
 
 
    qtyChanged(qty, key, product_id, variation_id) {
+    
+     
         var token = localStorage.getItem('token');
         if( token )
         {
+           setTimeout(() => {
+           this.setState({ isLoaded: false });
+         }, 100);
         qtychangeCart(qty, key).then(result => {
           this.getAllCart().then(result => {
               this.setState({ cart: result, isLoaded: true });
+
           });
           getCartTotals().then(result => {
             this.setState({ totals: result});
@@ -54,20 +60,28 @@ class Cart extends Component {
         });
       }
       else{
-       
-        updateqtyLocalcart(qty, product_id, variation_id).then(result => {
-          getLocalcart().then(res => {
-            this.setState({ cart: res, isLoaded: true });
-          })
-        
-        });
+         var localcart = localStorage.getItem('cart_content');
+          if(localcart){
+            updateqtyLocalcart(qty, product_id, variation_id).then(result => {
+              getLocalcart().then(res => {
+                this.setState({ cart: res, isLoaded: true });
+              })
+               getLocalTotals().then(result => {
+            // console.log(result)
+              this.setState({ totals: result});
+              });
+            
+            });
+          }
       }
   }
 
   removeitem(key, product_id, variation_id) {
+     
     var token = localStorage.getItem('token');
     if( token )
     {
+      this.setState({ isLoaded: false });
       removeFromCart(key).then(result => {
         this.getAllCart().then(result => {
             this.setState({ cart: result, isLoaded: true });
@@ -79,13 +93,21 @@ class Cart extends Component {
       });
     }
     else{
-      removeProductLocalCart(key, product_id, variation_id ).then(result => {
-         getLocalcart().then(res => {
-         
-          this.setState({ cart: res, isLoaded: true });
-        })
-      
-      });
+        var localcart = localStorage.getItem('cart_content');
+        if(localcart){
+          removeProductLocalCart(key, product_id, variation_id ).then(result => {
+             getLocalcart().then(res => {
+             
+              this.setState({ cart: res, isLoaded: true });
+            })
+
+              getLocalTotals().then(result => {
+             // console.log(result)
+              this.setState({ totals: result});
+            });
+          
+          });
+        }
     }
    
   }
@@ -111,7 +133,7 @@ class Cart extends Component {
          });
          
          getLocalTotals().then(result => {
-          console.log(result)
+         // console.log(result)
           this.setState({ totals: result});
         });
         
@@ -131,10 +153,12 @@ if (this.state.isLoaded) {
           return (
         <tr key={item.variation_id ?  (item.variation_id) : (item.product_id)} id="{item.product_id}">
           <td className="cart_product">
-          <img width="100px" alt="product" src={item.product_image} />
+          <a href={`/product/${item.product_id}`}><img width="100px" alt="product" src={item.product_image} /></a>
+          
 			</td>
       <td className="cart_product">
-      {item.product_name}
+       <a href={`/product/${item.product_id}`}><h4>{item.product_name}</h4></a>
+      
 			</td>	
       <td className="cart_product">
       {item.product_price}
@@ -179,7 +203,7 @@ if (this.state.isLoaded) {
 
 
   cartTotals(){
-   
+   console.log(this.state.totals);
       return (
         <div className="total_box"> 
         <Row>
@@ -193,7 +217,7 @@ if (this.state.isLoaded) {
             <h5>Total</h5>
             </Col>
             <Col xs={9}>
-            {this.state.totals.cart_contents_total}
+            {this.state.totals.total}
             </Col>
         </Row>        
       </div> 
@@ -208,7 +232,7 @@ if (this.state.isLoaded) {
     //console.log(this.state.isLoaded);
     if (!this.state.isLoaded) {
       return (
-         <Spinner animation="border" variant="primary" />
+         <Spinner animation="grow" variant="primary" />
       );
    }
           console.log(this.state.cart);

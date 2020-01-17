@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Col, Row, Container, Button, Form } from 'react-bootstrap';
+import { Col, Row, Container, Button, Form, Spinner } from 'react-bootstrap';
 import {BrowserRouter as Router, Route, Link, Redirect} from 'react-router-dom';
 import axios from 'axios';
 import { getUserByEmail, getLocalcart, addToCart, signUp } from "../actions";
@@ -10,6 +10,7 @@ class Login extends Component {
     super(props);
     this.state = {
     error: null,
+    isLoaded:true,
 	  email: '',
     password: '',
     reguser: "",
@@ -21,6 +22,7 @@ class Login extends Component {
  	
 	//console.log(this.state.email);
 	if (this.state.email) {
+    
 	var req = { username: this.state.email, password: this.state.password };
 	var apiHost = WooCommerce.url+'/wp-json';
     fetch(apiHost + '/jwt-auth/v1/token', {
@@ -29,7 +31,9 @@ class Login extends Component {
             headers: {'Content-Type':'application/json'},
         }).then((response) => response.json())
                 .then((result) => {
+
 			        if(result.token){
+                this.setState({ isLoaded: false });
 			        	console.log(result);
 						localStorage.setItem("token", result.token);
             localStorage.setItem("user_email", result.user_email);
@@ -41,12 +45,21 @@ class Login extends Component {
           addToCart(val.product_id, val.quantity, val.variation_id)
           
           })
-          localStorage.removeItem("cart_content");
-          this.props.history.push("/");
+         setTimeout(() => {
+          this.setState({ isLoaded: true });
+           localStorage.removeItem("cart_content");
+                this.props.history.push("/");
+         }, 3000);
+             
+          
 					}
                    
                 })
                 .catch((error) => {
+              setTimeout(() => {
+                  this.setState({ isLoaded: true });
+                  
+                 }, 30);
                     
                     console.error(error);
                 });
@@ -104,6 +117,11 @@ registerUser(){
   
   render() {
   	//console.log(this.state.password);
+     if (!this.state.isLoaded) {
+      return (
+         <Spinner animation="border" variant="primary" />
+      );
+   }
     return (
       <div>
        <Container>
