@@ -1,6 +1,9 @@
   import React, {Component, useState} from 'react';
   import { Col, Row, Container, Button, Form, Spinner, Table } from 'react-bootstrap';
-  import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart, getLocalcart } from "../actions";
+  import { getCountry, getAllStates, getCartContent, getCartTotals, processOrder, clearCart, getLocalcart, getLocalTotals, paymentSubmit } from "../actions";
+  import {Elements, StripeProvider} from 'react-stripe-elements';
+  import Stripecard from './Stripecard';
+
 class Checkout extends Component {
      
  constructor(props, state) {
@@ -21,12 +24,18 @@ class Checkout extends Component {
               billing_state: '',
               billing_postcode: '',
               billing_phone: '',
-              billing_email: user_email
+              billing_email: user_email,
+              dataFromParent: {},
+              stripetoken:{}
              }
-        
+        this.handleToken = this.handleToken.bind(this);
         }
 
-
+handleToken = (stripetoken) => {
+       //console.log(stripetoken);
+  
+        this.setState({ stripetoken });
+ } 
   handleChange = e => {
     if( ('billing_country' == e.target.name ) && ( 'select' != e.target.value ) )
     {
@@ -40,7 +49,8 @@ class Checkout extends Component {
       e.target.type === "checkbox" ? e.target.checked : e.target.value;
     this.setState(state);
     }
-
+ 
+ 
 
 chekoutSubmit = (event) => {
 event.preventDefault();
@@ -79,41 +89,60 @@ var chekdata =  { 'billing' : {
   })
   
   chekdata['line_items'] = temp_items
-  chekdata['payment_method'] = "bacs"
-  chekdata['set_paid'] = true
+  chekdata['payment_method'] = "stripe"
+  chekdata['set_paid'] = false
   chekdata['shipping_lines'] = [{
     method_id: "free_shipping",
     method_title: "Free Shipping",
     total: "0"
     }]
   
-//console.log(chekdata);
-processOrder(chekdata).then(result => {
- 
-  //console.log(result.data.id);
-  if(result.data.id){
-    var token = localStorage.getItem('token');
-    if( token )
-      {
-        clearCart();
-      }else{
-        localStorage.removeItem("cart_content");
-      }
-    
-    this.props.history.push(`/thankyou/${result.data.id}`);
-  }
 
-});
+ 
+    setTimeout(() => { 
+     
+        processOrder(chekdata).then(result => {
+        console.log(result.data.id);
+          if(result.data.id){
+            if (this.state.stripetoken.id) {
+                paymentSubmit(result.data.id, this.state.stripetoken.id).then(result => {
+                   console.log(result);
+                   
+                });
+            }
+          
+            var token = localStorage.getItem('token');
+            if( token )
+              {
+                clearCart();
+              }else{
+                localStorage.removeItem("cart_content");
+              }
+            
+            this.props.history.push(`/thankyou/${result.data.id}`);
+          }
+
+        });
+
+      
+      }, 700);
+
 
 }
 
 
 componentDidMount(){
+  this.handleToken();
   var token = localStorage.getItem('token');
   if( token )
     {
       getCartContent().then(result => {
         this.setState({ cart: result, isLoaded: true });
+    });
+
+      getCartTotals().then(result => {
+
+      this.setState({ totals: result, isLoaded: true });
     });
    } else{
       getLocalcart().then(result => {
@@ -121,19 +150,21 @@ componentDidMount(){
        
       });
      
-      
+       getLocalTotals().then(result => {
+            // console.log(result)
+              this.setState({ totals: result});
+              });
     }
   
-    getCartTotals().then(result => {
-
-      this.setState({ totals: result, isLoaded: true });
-    });
+    
       getCountry().then(result => {
         // console.log(result)
         this.setState({ countries: result, isLoaded: true });
       });
         
 }
+
+
 
 ChekcartList(){
   
@@ -143,11 +174,11 @@ if (this.state.isLoaded) {
           return (
         <tr key={item.product_id} id="{item.product_id}">
           <td className="cart_product">
-         
+           <a href={`/product/${item.product_id}`}><img width="100px" alt="product" src={item.product_image} /></a>
            
       </td>
       <td className="cart_product">
-      {item.product_name}
+      <a href={`/product/${item.product_id}`}><h4>{item.product_name}</h4></a>
       </td> 
       <td className="cart_product">
       {item.product_price}
@@ -181,7 +212,7 @@ if (this.state.isLoaded) {
           <h5>Total</h5>
           </Col>
           <Col xs={9}>
-          {this.state.totals.cart_contents_total}
+          {this.state.totals.total}
           </Col>
       </Row>        
     </div> 
@@ -191,13 +222,19 @@ if (this.state.isLoaded) {
 
   
     render() {
-        
+        if (!this.state.isLoaded) {
+      return (
+         <Spinner animation="border" variant="primary" />
+      );
+   }
+   console.log(this.state.dataFromParent)
         const { billing_email, cart, totals, countries, billing_country, billing_state} = this.state;
      
         return (
 
              <Container className="checkout_wrap">
              <h2>Checkout</h2>
+
             
             <Row>
              
@@ -223,7 +260,7 @@ if (this.state.isLoaded) {
           
         </div>
         {this.cartTotals()}
-       
+     
  <Form onSubmit={this.chekoutSubmit}>
       <Form.Row>
         <Form.Group as={Col} md="6" controlId="validationCustom01">
@@ -333,9 +370,16 @@ if (this.state.isLoaded) {
       />
     </Form.Group>
   </Form.Row>
-  
- 
-      <Button variant="secondary" type="submit" className="place_ordr_btn">Place Order</Button>
+   <StripeProvider apiKey="pk_test_mTfnMF6SGQgXESqMpvx6VCUp00uFl3rvnT">
+        <div className="card_box">
+        
+          <Elements>
+            <Stripecard handleToken={this.handleToken} data={this.state.dataFromParent} />
+          </Elements>
+        </div>
+      </StripeProvider>
+    
+    
     </Form>
                  
 
@@ -350,3 +394,4 @@ if (this.state.isLoaded) {
 }
 
 export default Checkout;
+

@@ -1,13 +1,26 @@
 import React, {Component} from 'react';
-import {
-  CardElement,
-  injectStripe,
-  StripeProvider,
-  Elements,
-} from 'react-stripe-elements';
+import {CardElement, injectStripe} from 'react-stripe-elements';
+ import {Button} from 'react-bootstrap';
 
-// You can customize your Elements to give it the look and feel of your site.
-const createOptions = () => {
+class Stripecard extends Component {
+  constructor(props) {
+    super(props);
+     this.state = {
+              stripetoken:''
+             }
+    this.submit = this.submit.bind(this);
+  }
+
+  async submit(ev) {
+    console.log(this.props);
+      let {token} = await this.props.stripe.createToken({name: "Name"});
+       this.setState({ stripetoken: token });
+        this.props.handleToken( this.state.stripetoken );
+      
+  }
+
+  // You can customize your Elements to give it the look and feel of your site.
+createOptions = () => {
   return {
     style: {
       base: {
@@ -24,59 +37,18 @@ const createOptions = () => {
       },
     }
   }
-};
-
-class _CardForm extends Component {
-  state = {
-    errorMessage: '',
-  };
-
-  handleChange = ({error}) => {
-    if (error) {
-      this.setState({errorMessage: error.message});
-    }
-  };
-
-  handleSubmit = (evt) => {
-    evt.preventDefault();
-    if (this.props.stripe) {
-      this.props.stripe.createToken().then(this.props.handleResult);
-    } else {
-      console.log("Stripe.js hasn't loaded yet.");
-    }
-  };
+}
 
   render() {
+
     return (
-      <div className="CardDemo">
-        <form onSubmit={this.handleSubmit.bind(this)}>
-          <label>
-            Card details
-            <CardElement
-              onChange={this.handleChange}
-              {...createOptions()}
-            />
-          </label>
-          <div className="error" role="alert">
-            {this.state.errorMessage}
-          </div>
-          <button>Pay</button>
-        </form>
+      <div className="checkout">
+        <p>Would you like to complete the purchase?</p>
+        <CardElement  {...this.createOptions()} />
+         <Button variant="secondary" onClick={this.submit} type="submit" className="place_ordr_btn">Place Order</Button>
       </div>
     );
   }
 }
 
-const CardForm = injectStripe(_CardForm);
-
-export class CardDemo extends Component {
-  render() {
-    return (
-      <StripeProvider apiKey="pk_test_mTfnMF6SGQgXESqMpvx6VCUp00uFl3rvnT">
-        <Elements>
-          <CardForm handleResult={this.props.handleResult} />
-        </Elements>
-      </StripeProvider>
-    );
-  }
-}
+export default injectStripe(Stripecard);

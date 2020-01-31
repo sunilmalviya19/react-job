@@ -158,3 +158,8 @@ h2.or {
 .table-responsive.cart_info tr a h4 {
     font-size: 13px;
 }
+.StripeElement {
+    padding: 10px;
+    background-color: #fff;
+    margin-block-end: 20px;
+}

@@ -254,10 +254,10 @@ const qtychangeCart = (qty, cart_item_key) => {
 }
 
  const getAdminToken =  () => {
-  var req = { username: 'admin', password: 'sunil1990' };
+  var req = { username: 'admin', password: 'test123G' };
   return postData("/wp-json/jwt-auth/v1/token", req).then(result => {
     console.log(result)
-   // return result.data.token;
+   return result.data.token;
   });
 }
 
@@ -270,6 +270,7 @@ export const getUserByEmail = (email) => {
   });
 }
 const processOrder = (orderData) => {
+  
   return getAdminToken().then(response => {
        const token = response;
        orderData['customer_id'] = sessionStorage.getItem('user_id');
@@ -278,6 +279,8 @@ const processOrder = (orderData) => {
           return result;
        
     })
+
+
   })
    
 }
@@ -383,6 +386,34 @@ export const signUp = (req) => {
           }
       })
   })
+}
+
+export const paymentSubmit = (order_id, token) => {
+    // grab order_id and token from processOrder
+    let paymentData = {
+        "order_id": order_id,
+        "stripe_token": token
+    }
+    console.log(paymentData);
+     const headers = {
+        'Content-Type': 'application/json',
+        }
+   return axios
+        .post(
+            cartRoot +'/wp-json/wc/v2/payment/stripe',
+            paymentData,
+            {
+        headers: headers
+      }
+        )
+        .then(response => {
+           // console.log(response)
+           
+        })
+        .catch(err => {
+            //console.log('AXIOS ERROR payment Submit: ', err)
+            
+        })
 }
   export { cartRoot, addToCart, removeFromCart, getCartTotals, qtychangeCart, getProductimage, processOrder, getCountry, getCartContent, getLocalcart, updateqtyLocalcart };
 

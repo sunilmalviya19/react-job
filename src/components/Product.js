@@ -22,11 +22,10 @@ import axios from 'axios';
             
         }
 
-     
 
      getData(page){
      const that = this;
-    
+     
 
       if (page) {
         var page = page;
