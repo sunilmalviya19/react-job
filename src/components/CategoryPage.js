@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
-import { Col, Row, Container, Button, Spinner, Pagination } from 'react-bootstrap';
+import { Col, Row, Container, Button, Spinner } from 'react-bootstrap';
 import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import SideMenu from './SideMenu';
-
+import Pagination from './Pagination';
 class CategoryPage extends Component 
 {
   constructor(props, state) {
@@ -18,6 +18,7 @@ class CategoryPage extends Component
     currentPage: 1,
     per_page_product: 8,
     total_items:null,
+    total_pages:null,
     items: {}
     };
   }
@@ -40,10 +41,11 @@ class CategoryPage extends Component
    }
      var category_id = this.state.cat_id;
       WooCommerce.getAsync('products/?page='+page+'&per_page='+that.state.per_page_product+'&category='+category_id).then(function(result) {
-        console.log(result);
+        //console.log(result);
         that.setState({
           isLoaded: true,
           total_items: result.headers['x-wp-total'],
+           total_pages: result.headers['x-wp-totalpages'],
           items: JSON.parse(result.toJSON().body)
         });
       });
@@ -56,8 +58,8 @@ class CategoryPage extends Component
       }
       pageChanged(e) {
 
-        this.setState({ currentPage: e.target.text });
-        this.getcatData(e.target.text);
+        this.setState({ currentPage: e });
+        this.getcatData(e);
     
       }
       catproductlist(){
@@ -83,29 +85,12 @@ class CategoryPage extends Component
       }
     render() {
         
-      const all_page = this.state.total_items / this.state.per_page_product;
+      //const all_page = this.state.total_items / this.state.per_page_product;
+       const all_page = this.state.total_pages;
       let active = this.state.currentPage;
       let Pitems = [];   
-      //const indexOfLastTodo = this.state.currentPage * this.state.per_page_product;
-     // const indexOfFirstTodo = indexOfLastTodo - this.state.per_page_product;
-    //  const renderedProduct = this.state.items.slice(indexOfFirstTodo, indexOfLastTodo);
      
-      for (let number = 1; number <= all_page; number++) {
-        Pitems.push(
-          <Pagination.Item key={number} active={number === active}>
-            {number}
-          </Pagination.Item>
-          
-          ,
-        );
-      }
-
-const paginationBasic = (
-  <div>
-    <Pagination onClick={this.pageChanged} >{Pitems}</Pagination>
-   
-  </div>
-);
+    
 
         if (!this.state.isLoaded) {
           return (
@@ -126,7 +111,7 @@ const paginationBasic = (
       </Col>
        </Row>        
            <div className="page_cont">
-           {paginationBasic}
+            <Pagination activePage={active} totalPages={all_page} handleSelect={ this.pageChanged }></Pagination>
           </div>  
         </Container>
       );

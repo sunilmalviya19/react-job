@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Col, Row, Container, Button, Spinner, Pagination } from 'react-bootstrap';
+import { Col, Row, Container, Button, Spinner } from 'react-bootstrap';
 import WooCommerce from '../Api';
 import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import SideMenu from './SideMenu';
 import axios from 'axios';
-
+import Pagination from './Pagination';
  class Product extends Component {
        constructor(props) {
           super(props);
@@ -15,6 +15,7 @@ import axios from 'axios';
              currentPage: 1,
              per_page_product: 20,
              total_items:null,
+             total_pages:null,
              category: [],
              items: []
             
@@ -35,10 +36,12 @@ import axios from 'axios';
      }
     WooCommerce.getAsync('products?per_page='+that.state.per_page_product+'&page='+page)
      .then(function(result) {
-      console.log(JSON.parse(result.toJSON().body));
+      //console.log(result);
+      
       that.setState({
           isLoaded: true,
           total_items: result.headers['x-wp-total'],
+          total_pages: result.headers['x-wp-totalpages'],
           items: JSON.parse(result.toJSON().body),
         })
             
@@ -58,8 +61,8 @@ import axios from 'axios';
   
 
    pageChanged(e) {
-    
-    var pageno = e.target.text
+    //console.log(e);
+    var pageno = e
     this.setState({ currentPage: pageno });
     this.getData(pageno);
 
@@ -86,35 +89,38 @@ import axios from 'axios';
   
 //render  list
   render () {
-      console.log(this.state.currentPage);
      
-      const all_page = this.state.total_items / this.state.per_page_product;
+
+     // const all_page = this.state.total_items / this.state.per_page_product;
+       const all_page = this.state.total_pages;
       let active = this.state.currentPage;
       let Pitems = [];   
-      //const indexOfLastTodo = this.state.currentPage * this.state.per_page_product;
-     // const indexOfFirstTodo = indexOfLastTodo - this.state.per_page_product;
-    //  const renderedProduct = this.state.items.slice(indexOfFirstTodo, indexOfLastTodo);
      
-      for (let number = 1; number <= all_page; number++) {
-        Pitems.push(
+     //console.log(this.state.total_pages);
+     
+      // for (let number = 1; number <= all_page; number++) {
+      //   Pitems.push(
           
-          <Pagination.Item key={number} active={number === active} onClick={this.pageChanged}>
-            {number}
-          </Pagination.Item>
-          ,
-         
-        );
+      //     <Pagination.Item key={number} active={number == active} onClick={this.pageChanged}>
+      //       {number}
+      //     </Pagination.Item>,
+          
+      //   );
         
-      }
+      // }
 
-const paginationBasic = (
-  <div>
+// const paginationBasic = (
+//   <div>
    
-      <Pagination >{Pitems}</Pagination>
+//       <Pagination > 
+           
+//             {Pitems}
+            
+//       </Pagination>
       
    
-  </div>
-);
+//   </div>
+// );
          if (!this.state.isLoaded) {
             return (
                <Spinner animation="border" variant="primary" />
@@ -138,7 +144,8 @@ const paginationBasic = (
 </Row>        
 
            <div className="page_cont">
-           {paginationBasic}
+          
+            <Pagination activePage={active} totalPages={all_page} handleSelect={ this.pageChanged }></Pagination>
           </div>  
             
           </Container>

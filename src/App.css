@@ -163,3 +163,7 @@ h2.or {
     background-color: #fff;
     margin-block-end: 20px;
 }
+
+.page_cont ul.pagination {
+    display: inline-flex;
+}
